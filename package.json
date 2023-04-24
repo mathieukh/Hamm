@@ -1,0 +1,7 @@
+{
+  "name": "@khalypso/hamm",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ]
+}
