@@ -1,9 +1,11 @@
 import { Header } from "@/components/Header";
 import { FC, PropsWithChildren } from "react";
 
-export const PageLayout: FC<PropsWithChildren> = ({ children }) => (
-  <main className="container mx-auto">
+const PageLayout: FC<PropsWithChildren> = ({ children }) => (
+  <div className="container mx-auto p-4">
     <Header />
     {children}
-  </main>
+  </div>
 );
+
+export default PageLayout;

@@ -1,35 +1,22 @@
 import {
-  hardhat,
-  arbitrum,
-  fantom,
-  arbitrumGoerli,
-  fantomTestnet,
-} from "@wagmi/core/chains";
-import { configureChains, createClient } from "wagmi";
-import { publicProvider } from "wagmi/providers/public";
-import { infuraProvider } from "wagmi/providers/infura";
-import { getDefaultWallets } from "@rainbow-me/rainbowkit";
+  Fantom,
+  FantomTestnet,
+  Arbitrum,
+  ArbitrumGoerli,
+  Localhost,
+} from "@thirdweb-dev/chains";
 
-const { INFURA_PROVIDER_API_KEY } = process.env;
+const { INFURA_PROVIDER_API_KEY, NODE_ENV } = process.env;
 
-const MAIN_CHAINS = [arbitrum, fantom];
-const TEST_CHAINS = [hardhat, arbitrumGoerli, fantomTestnet];
+const activeChain = NODE_ENV === "production" ? Fantom : Localhost;
 
-export const { chains, provider } = configureChains(
-  [...MAIN_CHAINS, ...TEST_CHAINS],
-  [
-    infuraProvider({ apiKey: INFURA_PROVIDER_API_KEY!!, priority: 0 }),
-    publicProvider({ priority: 1 }),
-  ]
-);
+const supportedChains =
+  NODE_ENV === "production"
+    ? [Fantom, Arbitrum]
+    : [Localhost, ArbitrumGoerli, FantomTestnet];
 
-const { connectors } = getDefaultWallets({
-  appName: "Hamm",
-  chains,
-});
-
-export const wagmiClient = createClient({
-  autoConnect: true,
-  provider,
-  connectors,
-});
+export const thirdwebConfig = {
+  infuraApiKey: INFURA_PROVIDER_API_KEY,
+  activeChain,
+  supportedChains,
+};

@@ -1,16 +1,15 @@
-import "@rainbow-me/rainbowkit/styles.css";
 import "@/styles/globals.css";
-import { wagmiClient, chains } from "@/lib/web3";
-import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import React, { FC } from "react";
 import type { AppProps } from "next/app";
-import { WagmiConfig } from "wagmi";
+import { ThirdwebProvider } from "@thirdweb-dev/react";
+import { thirdwebConfig } from "@/lib/web3";
 
-const App = ({ Component, pageProps }: AppProps) => (
-  <WagmiConfig client={wagmiClient}>
-    <RainbowKitProvider chains={chains}>
+const App: FC<AppProps> = ({ Component, pageProps }) => {
+  return (
+    <ThirdwebProvider {...thirdwebConfig}>
       <Component {...pageProps} />
-    </RainbowKitProvider>
-  </WagmiConfig>
-);
+    </ThirdwebProvider>
+  );
+};
 
 export default App;

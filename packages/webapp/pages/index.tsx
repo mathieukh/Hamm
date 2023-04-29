@@ -1,5 +1,5 @@
-import { PageLayout } from "@/layout/PageLayout";
+import PageLayout from "@/layout/PageLayout";
 
-const Home = () => <PageLayout>Hello world</PageLayout>;
+const Home = () => <PageLayout />;
 
 export default Home;
