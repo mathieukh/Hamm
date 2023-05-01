@@ -1,11 +1,12 @@
 import { FC } from "react";
 import { ConnectWallet, useAddress, useDisconnect } from "@thirdweb-dev/react";
+import { truncateAddress } from "@/utils";
 
 export const Profile: FC = () => {
   const address = useAddress();
   const disconnect = useDisconnect();
   if (address === undefined) return <ConnectWallet />;
-  const displayedAddress = address.slice(0, 6) + "..." + address.slice(-4);
+  const displayedAddress = truncateAddress(address);
   return (
     <div className="flex gap-2">
       <span className={`font-semibold text-md`}>
