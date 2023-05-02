@@ -3,5 +3,5 @@ import { truncateAddress } from "@/utils";
 
 export const useTruncatedAddress = () => {
   const address = useAddress();
-  return address && truncateAddress(address);
+  return { truncatedAddress: address && truncateAddress(address), address };
 };

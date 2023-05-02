@@ -1,20 +1,10 @@
 import { FC } from "react";
-import { ConnectWallet, useAddress, useDisconnect } from "@thirdweb-dev/react";
-import { truncateAddress } from "@/utils";
+import { ConnectWallet, useConnectionStatus } from "@thirdweb-dev/react";
+import { AddressDropdown } from "./AddressDropdown";
 
 export const Profile: FC = () => {
-  const address = useAddress();
-  const disconnect = useDisconnect();
-  if (address === undefined) return <ConnectWallet />;
-  const displayedAddress = truncateAddress(address);
-  return (
-    <div className="flex gap-2">
-      <span className={`font-semibold text-md`}>
-        Connected to <span className="font-bold">{displayedAddress}</span>
-      </span>
-      <button title="Disconnect wallet" onClick={disconnect}>
-        x
-      </button>
-    </div>
-  );
+  const status = useConnectionStatus();
+  if (status === "connecting" || status === "unknown") return null;
+  if (status === "disconnected") return <ConnectWallet />;
+  return <AddressDropdown />;
 };
