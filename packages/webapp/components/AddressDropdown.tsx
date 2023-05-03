@@ -7,12 +7,9 @@ import {
   ClipboardIcon,
 } from "@heroicons/react/24/outline";
 import { useCopyAddress, useTruncatedAddress } from "@/hooks";
-import { useAddress, useDisconnect } from "@thirdweb-dev/react";
+import { useDisconnect } from "@thirdweb-dev/react";
 import Link from "next/link";
-
-function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(" ");
-}
+import { classNames } from "@/utils/classNames";
 
 export const AddressDropdown: FC = () => {
   const { truncatedAddress, address } = useTruncatedAddress();
@@ -22,7 +19,7 @@ export const AddressDropdown: FC = () => {
   return (
     <Menu as="div" className="relative inline-block text-left">
       <div>
-        <Menu.Button className="inline-flex w-full justify-center gap-x-1.5 rounded-md px-3 py-2 text-sm text-gray-700 font-semibold ring-1 ring-inset ring-gray-700/20 hover:bg-purple-300">
+        <Menu.Button className="inline-flex w-full justify-center gap-x-1.5 rounded-md px-3 py-2 text-sm text-gray-700 font-semibold ring-1 ring-inset ring-gray-700/20 bg-white hover:bg-gray-100">
           {({ open }) => (
             <>
               {truncatedAddress}
