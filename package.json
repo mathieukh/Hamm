@@ -5,6 +5,7 @@
     "packages/*"
   ],
   "scripts": {
-    "dev:webapp": "yarn workspace @khalypso/hamm-webapp run dev"
+    "dev:webapp": "yarn workspace @khalypso/hamm-webapp run dev",
+    "dev:contract": "yarn workspace @khalypso/hamm-contract run dev"
   }
 }
