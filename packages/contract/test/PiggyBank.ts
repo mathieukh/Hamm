@@ -160,129 +160,16 @@ describe("PiggyBank", () => {
         description,
         tokenContractAddress,
         name,
-        paused,
       } = await hamm.getPiggyBankById(BigNumber.from(0));
       expect(balance).to.eql(BigNumber.from(0));
       expect(beneficiaryAddress).to.eql(userA.address);
       expect(name).to.eql("Piggy bank 0");
       expect(description).to.eql("Piggy bank of the user");
       expect(tokenContractAddress).to.eql(fakeToken.address);
-      expect(paused).to.eql(false);
-    });
-  });
-
-  describe("Toggle piggy bank", () => {
-    it("Given a beneficiary in a piggy bank, When the beneficiary want to toggle it, Then the piggy bank can be toggled on/off", async () => {
-      const {
-        hamm,
-        owner: userA,
-        otherAccount: userB,
-        fakeToken,
-      } = await deployHammContract();
-      await hamm
-        .connect(userA)
-        .createNewPiggyBank(
-          userA.address,
-          userB.address,
-          "Piggy bank 0",
-          "Piggy bank of the user",
-          fakeToken.address
-        )
-        .then((tx) => tx.wait());
-      const piggyBankId = BigNumber.from(0);
-      const { paused: pausedBefore } = await hamm.getPiggyBankById(piggyBankId);
-      expect(pausedBefore).to.eql(false);
-      await hamm
-        .connect(userA)
-        .togglePiggyBank(piggyBankId)
-        .then((tx) => tx.wait());
-      const { paused: pausedAfter } = await hamm.getPiggyBankById(piggyBankId);
-      expect(pausedAfter).to.eql(true);
-    });
-
-    it("Given a winthdrawer in a piggy bank, When the withdrawer want to toggle it, Then the piggy bank can be toggled on/off", async () => {
-      const {
-        hamm,
-        owner: userA,
-        otherAccount: userB,
-        fakeToken,
-      } = await deployHammContract();
-      await hamm
-        .connect(userA)
-        .createNewPiggyBank(
-          userA.address,
-          userB.address,
-          "Piggy bank 0",
-          "Piggy bank of the user",
-          fakeToken.address
-        )
-        .then((tx) => tx.wait());
-      const piggyBankId = BigNumber.from(0);
-      const { paused: pausedBefore } = await hamm.getPiggyBankById(piggyBankId);
-      expect(pausedBefore).to.eql(false);
-      await hamm
-        .connect(userB)
-        .togglePiggyBank(piggyBankId)
-        .then((tx) => tx.wait());
-      const { paused: pausedAfter } = await hamm.getPiggyBankById(piggyBankId);
-      expect(pausedAfter).to.eql(true);
-    });
-
-    it("Given a user different than the beneficiary or withdrawer on a piggy bank, When it wants to toggle the piggy bank, Then it must revert as only the beneficiary or withdrawer can toggle a piggy bank", async () => {
-      const {
-        hamm,
-        owner: userA,
-        otherAccount: userB,
-        fakeToken,
-      } = await deployHammContract();
-      await hamm
-        .connect(userA)
-        .createNewPiggyBankForSender(
-          "Piggy bank 0",
-          "Piggy bank of the user",
-          fakeToken.address
-        )
-        .then((tx) => tx.wait());
-      const piggyBankId = BigNumber.from(0);
-      const { paused: pausedBefore } = await hamm.getPiggyBankById(piggyBankId);
-      expect(pausedBefore).to.eql(false);
-      await expect(
-        hamm.connect(userB).togglePiggyBank(piggyBankId)
-      ).to.revertedWith(
-        "Only withdrawer or beneficiary can call this function."
-      );
-      const { paused: pausedAfter } = await hamm.getPiggyBankById(piggyBankId);
-      expect(pausedAfter).to.eql(false);
     });
   });
 
   describe("Deposit / Withdraw", () => {
-    it("Given a paused piggy bank, When a user want to deposit money in it, Then it must revert the transaction", async () => {
-      const {
-        hamm,
-        owner: userA,
-        fakeToken,
-        changeBalanceForUser,
-      } = await deployHammContract();
-      await hamm
-        .connect(userA)
-        .createNewPiggyBankForSender(
-          "Piggy bank 0",
-          "Piggy bank of the user",
-          fakeToken.address
-        )
-        .then((tx) => tx.wait());
-      const piggyBankId = BigNumber.from(0);
-      await changeBalanceForUser(userA.address, BigNumber.from(100_000));
-      await hamm.togglePiggyBank(piggyBankId).then((tx) => tx.wait());
-
-      await expect(
-        hamm
-          .connect(userA)
-          .depositPiggyBank(piggyBankId, BigNumber.from(50_000))
-      ).to.revertedWith("You can not deposit in a paused piggy bank");
-    });
-
     it("Given a user depositing money in a piggy bank, When checking the balance of the piggy bank, Then it must be the amount deposited by the user", async () => {
       const {
         hamm,
@@ -629,9 +516,7 @@ describe("PiggyBank", () => {
       expect(withdrawerAddressBefore).to.eql(userA.address);
       await expect(
         hamm.connect(userB).changeWithdrawer(piggyBankId, userB.address)
-      ).to.revertedWith(
-        "Only withdrawer or beneficiary can call this function."
-      );
+      ).to.revertedWith("Only withdrawer or owner can call this function.");
       const { withdrawerAddress: withdrawerAddressAfter } =
         await hamm.getPiggyBankById(piggyBankId);
       expect(withdrawerAddressAfter).to.eql(userA.address);

@@ -1,21 +1,21 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 struct PiggyBank {
-    bool paused;
     string name;
     string description;
     address tokenContractAddress;
     uint balance;
-    address beneficiaryAddress;
     address withdrawerAddress;
 }
 
-contract Hamm {
+contract Hamm is ERC721 {
     uint numPiggyBanks = 0;
     mapping(uint => PiggyBank) piggyBanksById;
-    mapping(address => uint[]) piggyBankIdsByBeneficiary;
+
+    constructor() ERC721("PiggyBank", "PBK") {}
 
     event PiggyBankCreated(uint piggyBankId);
 
@@ -23,9 +23,9 @@ contract Hamm {
 
     modifier onlyWithdrawerOrBeneficiary(uint piggyBankId) {
         require(
-            msg.sender == piggyBanksById[piggyBankId].withdrawerAddress ||
-                msg.sender == piggyBanksById[piggyBankId].beneficiaryAddress,
-            "Only withdrawer or beneficiary can call this function."
+            msg.sender == ownerOf(piggyBankId) ||
+                msg.sender == piggyBanksById[piggyBankId].withdrawerAddress,
+            "Only withdrawer or owner can call this function."
         );
         _;
     }
@@ -34,14 +34,6 @@ contract Hamm {
         require(
             msg.sender == piggyBanksById[piggyBankId].withdrawerAddress,
             "Only withdrawer can call this function."
-        );
-        _;
-    }
-
-    modifier onlyActivePiggyBank(uint piggyBankId) {
-        require(
-            piggyBanksById[piggyBankId].paused == false,
-            "You can not deposit in a paused piggy bank"
         );
         _;
     }
@@ -68,15 +60,13 @@ contract Hamm {
         address tokenContractAddress
     ) public {
         uint piggyBankId = numPiggyBanks++;
-        piggyBankIdsByBeneficiary[beneficiaryAddress].push(piggyBankId);
         PiggyBank storage piggyBank = piggyBanksById[piggyBankId];
-        piggyBank.paused = false;
         piggyBank.name = name;
         piggyBank.description = description;
         piggyBank.tokenContractAddress = tokenContractAddress;
         piggyBank.balance = 0;
-        piggyBank.beneficiaryAddress = beneficiaryAddress;
         piggyBank.withdrawerAddress = withdrawerAddress;
+        _safeMint(beneficiaryAddress, piggyBankId);
         emit PiggyBankCreated(piggyBankId);
     }
 
@@ -87,7 +77,15 @@ contract Hamm {
     function getPiggyBankIdsForAddress(
         address beneficiaryAddress
     ) public view returns (uint[] memory) {
-        return piggyBankIdsByBeneficiary[beneficiaryAddress];
+        uint numberOfPiggyBanks = balanceOf(beneficiaryAddress);
+        uint[] memory ownedPiggyBankIds = new uint[](numberOfPiggyBanks);
+        uint foundPiggyBank = 0;
+        for (uint piggyBankId = 0; piggyBankId < numPiggyBanks; piggyBankId++) {
+            if (foundPiggyBank >= numberOfPiggyBanks) break;
+            if (ownerOf(piggyBankId) == beneficiaryAddress)
+                ownedPiggyBankIds[foundPiggyBank++] = piggyBankId;
+        }
+        return ownedPiggyBankIds;
     }
 
     function getPiggyBankById(
@@ -96,7 +94,6 @@ contract Hamm {
         public
         view
         returns (
-            bool paused,
             string memory name,
             string memory description,
             address tokenContractAddress,
@@ -105,26 +102,18 @@ contract Hamm {
             address withdrawerAddress
         )
     {
-        paused = piggyBanksById[piggyBankId].paused;
         name = piggyBanksById[piggyBankId].name;
         description = piggyBanksById[piggyBankId].description;
         tokenContractAddress = piggyBanksById[piggyBankId].tokenContractAddress;
         balance = piggyBanksById[piggyBankId].balance;
-        beneficiaryAddress = piggyBanksById[piggyBankId].beneficiaryAddress;
+        beneficiaryAddress = ownerOf(piggyBankId);
         withdrawerAddress = piggyBanksById[piggyBankId].withdrawerAddress;
-    }
-
-    function togglePiggyBank(
-        uint piggyBankId
-    ) public onlyWithdrawerOrBeneficiary(piggyBankId) {
-        piggyBanksById[piggyBankId].paused = !piggyBanksById[piggyBankId]
-            .paused;
     }
 
     function depositPiggyBank(
         uint piggyBankId,
         uint amount
-    ) public onlyActivePiggyBank(piggyBankId) returns (bool) {
+    ) public returns (bool) {
         IERC20 inputToken = IERC20(
             piggyBanksById[piggyBankId].tokenContractAddress
         );
@@ -140,10 +129,7 @@ contract Hamm {
         IERC20 inputToken = IERC20(
             piggyBanksById[piggyBankId].tokenContractAddress
         );
-        bool transfer = inputToken.transfer(
-            piggyBanksById[piggyBankId].beneficiaryAddress,
-            amount
-        );
+        bool transfer = inputToken.transfer(ownerOf(piggyBankId), amount);
         emit PiggyBankWithdrawed(piggyBankId);
         return transfer;
     }

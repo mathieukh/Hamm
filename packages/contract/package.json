@@ -9,7 +9,8 @@
     "compile": "hardhat compile",
     "test": "hardhat test",
     "test:coverage": "hardhat coverage",
-    "dev": "hardhat node"
+    "dev": "hardhat node",
+    "deploy:localhost": "hardhat run --network localhost scripts/deploy.ts"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.7.0",
