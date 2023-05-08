@@ -13,7 +13,7 @@ const App: FC<AppProps> = ({ Component, pageProps }) => {
       <ToastContainer
         autoClose={3000}
         position="bottom-center"
-        theme="light"
+        theme="dark"
         draggable={false}
       />
     </ThirdwebProvider>
