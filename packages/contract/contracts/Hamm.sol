@@ -12,10 +12,14 @@ struct PiggyBank {
 }
 
 contract Hamm is ERC721 {
-    uint numPiggyBanks = 0;
-    mapping(uint => PiggyBank) piggyBanksById;
+    uint private numPiggyBanks = 0;
+    mapping(uint => PiggyBank) private piggyBanksById;
 
-    constructor() ERC721("PiggyBank", "PBK") {}
+    address private tipReceiverAddress;
+
+    constructor(address _tipReceiverAddress) ERC721("PiggyBank", "PBK") {
+        tipReceiverAddress = _tipReceiverAddress;
+    }
 
     event PiggyBankCreated(uint piggyBankId);
 
@@ -122,16 +126,24 @@ contract Hamm is ERC721 {
     }
 
     function withdrawalPiggyBank(
-        uint piggyBankId
-    ) public onlyWithdrawer(piggyBankId) returns (bool) {
+        uint piggyBankId,
+        uint tip
+    ) public onlyWithdrawer(piggyBankId) returns (bool transfer) {
         uint amount = piggyBanksById[piggyBankId].balance;
+        require(tip <= amount, "The tip is not correct");
+        uint amountToWithdrawer = amount - tip;
         piggyBanksById[piggyBankId].balance = 0;
         IERC20 inputToken = IERC20(
             piggyBanksById[piggyBankId].tokenContractAddress
         );
-        bool transfer = inputToken.transfer(ownerOf(piggyBankId), amount);
+        transfer = inputToken.transfer(
+            ownerOf(piggyBankId),
+            amountToWithdrawer
+        );
+        if (tip > 0) {
+            inputToken.transfer(tipReceiverAddress, tip);
+        }
         emit PiggyBankWithdrawed(piggyBankId);
-        return transfer;
     }
 
     function changeWithdrawer(
