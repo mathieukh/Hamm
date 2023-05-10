@@ -6,12 +6,12 @@ import {
   ClipboardIcon,
 } from "@heroicons/react/24/outline";
 import { useCopyAddress, useTruncatedAddress } from "@/hooks";
-import { useDisconnect } from "@thirdweb-dev/react";
+import { useDisconnect } from "wagmi";
 import Link from "next/link";
 
 export const AddressDropdown: FC = () => {
   const { truncatedAddress, address } = useTruncatedAddress();
-  const disconnect = useDisconnect();
+  const { disconnect } = useDisconnect();
   const copyAddress = useCopyAddress();
   if (address === undefined) return null;
   return (

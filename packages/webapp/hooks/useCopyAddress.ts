@@ -1,8 +1,8 @@
-import { useAddress } from "@thirdweb-dev/react";
+import { useAccount } from "wagmi";
 import { toast } from "react-toastify";
 
 export const useCopyAddress = () => {
-  const address = useAddress();
+  const { address } = useAccount();
   return () => {
     if (address !== undefined) {
       navigator.clipboard.writeText(address).then(() => {

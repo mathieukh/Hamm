@@ -1,5 +1,7 @@
+import { Address } from "wagmi";
+
 export const truncateAddress = (
-  address: string,
+  address: Address,
   {
     padFromStart = 6,
     padFromEnd = 4,

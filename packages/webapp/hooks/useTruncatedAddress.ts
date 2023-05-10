@@ -1,7 +1,7 @@
-import { useAddress } from "@thirdweb-dev/react";
 import { truncateAddress } from "@/utils";
+import { useAccount } from "wagmi";
 
 export const useTruncatedAddress = () => {
-  const address = useAddress();
+  const { address } = useAccount();
   return { truncatedAddress: address && truncateAddress(address), address };
 };

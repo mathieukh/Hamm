@@ -1,12 +1,20 @@
 import { FC } from "react";
-import { ConnectWallet, useConnectionStatus } from "@thirdweb-dev/react";
 import { AddressDropdown } from "./AddressDropdown";
 import { ChooseChainDropdown } from "./ChooseChainDropdown";
+import { useAccount, useConnect } from "wagmi";
 
 export const Profile: FC = () => {
-  const status = useConnectionStatus();
-  if (status === "connecting" || status === "unknown") return null;
-  if (status === "disconnected") return <ConnectWallet theme="light" />;
+  const { isDisconnected } = useAccount();
+  const { connect, connectors } = useConnect();
+  if (isDisconnected)
+    return (
+      <button
+        className="btn btn-outline btn-secondary"
+        onClick={() => connect({ connector: connectors[0] })}
+      >
+        Connect wallet
+      </button>
+    );
   return (
     <div className="flex flex-row gap-2">
       <AddressDropdown />

@@ -1,18 +1,19 @@
 import {
-  Fantom,
-  Localhost,
-  Arbitrum,
-  ArbitrumGoerli,
-  FantomTestnet,
-} from "@thirdweb-dev/chains";
+  fantom,
+  fantomTestnet,
+  arbitrum,
+  arbitrumGoerli,
+  hardhat,
+} from "@wagmi/chains";
+import { Chain } from "wagmi";
 
 const { INFURA_PROVIDER_API_KEY, NODE_ENV } = process.env;
 
-const activeChain = NODE_ENV === "production" ? Fantom : Localhost;
+const activeChain: Chain = NODE_ENV === "production" ? fantom : hardhat;
 
-const supportedChains =
+const supportedChains: Chain[] =
   NODE_ENV === "production"
-    ? [Fantom, Arbitrum]
-    : [Localhost, ArbitrumGoerli, FantomTestnet];
+    ? [fantom, arbitrum]
+    : [hardhat, arbitrumGoerli, fantomTestnet];
 
 export { INFURA_PROVIDER_API_KEY, activeChain, supportedChains };

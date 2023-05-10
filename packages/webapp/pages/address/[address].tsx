@@ -1,10 +1,11 @@
 import { AddressPageContent } from "@/features/hamm-contract";
 import PageLayout from "@/layout/PageLayout";
 import { useRouter } from "next/router";
+import { Address } from "wagmi";
 
 const useParams = () => {
   const router = useRouter();
-  return { address: router.query.address as string };
+  return { address: router.query.address as Address };
 };
 
 const AddressPage = () => {

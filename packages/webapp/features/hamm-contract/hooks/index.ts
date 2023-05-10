@@ -1,2 +1,1 @@
-export * from "./useHammContract";
-export * from "./usePiggyBanksIds";
+export * from "./useContractAddress";

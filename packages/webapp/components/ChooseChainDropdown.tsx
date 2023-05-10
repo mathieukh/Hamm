@@ -1,36 +1,21 @@
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
-import {
-  useActiveChain,
-  MediaRenderer,
-  useSwitchChain,
-  useSupportedChains,
-  useChainId,
-  useConnectionStatus,
-} from "@thirdweb-dev/react";
 import { FC } from "react";
 import { supportedChains } from "@/config";
+import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
 
 const ChainAvatar: FC = () => {
-  const connectedChainId = useChainId();
-  const chain = useActiveChain();
-  const supportedChains = useSupportedChains();
-  if (connectedChainId === undefined) return null;
-  const isSupportedChain = supportedChains.some(
-    (supportedChain) => supportedChain.chainId === connectedChainId
-  );
-  if (!isSupportedChain)
+  const { chain } = useNetwork();
+  if (chain === undefined) return null;
+  if (chain.unsupported)
     return <button className="text-red-600">Wrong network</button>;
-  const { icon, name, chain: chainName } = chain!!;
-  if (icon === undefined) return <>{name}</>;
-  return (
-    <MediaRenderer alt={chainName} src={icon.url} height="20px" width="20px" />
-  );
+  const { name } = chain;
+  return <>{name}</>;
 };
 
 export const ChooseChainDropdown: FC = () => {
-  const status = useConnectionStatus();
-  const switchChain = useSwitchChain();
-  if (status !== "connected") return null;
+  const { isConnected } = useAccount();
+  const { switchNetwork } = useSwitchNetwork();
+  if (!isConnected) return null;
   return (
     <div className="dropdown dropdown-end">
       <label tabIndex={0} className="btn gap-2 m-1">
@@ -41,11 +26,9 @@ export const ChooseChainDropdown: FC = () => {
         tabIndex={0}
         className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52"
       >
-        {supportedChains.map((supportedChain) => (
-          <li key={supportedChain.chainId}>
-            <a onClick={() => switchChain(supportedChain.chainId)}>
-              {supportedChain.name}
-            </a>
+        {supportedChains.map(({ id, name }) => (
+          <li key={id}>
+            <a onClick={() => switchNetwork?.(id)}>{name}</a>
           </li>
         ))}
       </ul>

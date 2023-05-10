@@ -1,11 +1,17 @@
-import { usePiggyBanksIds } from "../hooks";
 import { FC } from "react";
 import { CreatePiggyBankButton } from "./CreatePiggyBankButton";
-import { useAddress } from "@thirdweb-dev/react";
+import { Address, useAccount } from "wagmi";
+import { useHammGetPiggyBankIdsForAddress } from "@/lib/hamm";
+import { useContractAddress } from "../hooks";
 
-export const PiggyBanksCounter: FC<{ address: string }> = ({ address }) => {
-  const { data: piggyBanksIds, status } = usePiggyBanksIds(address);
-  const isConnectedAddress = useAddress() === address;
+export const PiggyBanksCounter: FC<{ address: Address }> = ({ address }) => {
+  const contractAddress = useContractAddress();
+  const { data: piggyBanksIds, status } = useHammGetPiggyBankIdsForAddress({
+    address: contractAddress,
+    args: [address],
+  });
+  const { address: connectedAddress } = useAccount();
+  const isConnectedAddressPage = connectedAddress == address;
   if (status === "error")
     return (
       <span className="text-xl font-bold text-red-600 rounded-sm p-2 bg-red-300/40">
@@ -13,17 +19,17 @@ export const PiggyBanksCounter: FC<{ address: string }> = ({ address }) => {
       </span>
     );
   return (
-    <div className="stats">
+    <div className="stats bg-neutral">
       <div className="stat">
         <div className="stat-value text-secondary">
           {status === "loading" ? (
             <progress className="progress progress-secondary w-10"></progress>
           ) : (
-            piggyBanksIds.length
+            piggyBanksIds?.length
           )}
         </div>
         <div className="stat-title">Piggy banks</div>
-        {isConnectedAddress && (
+        {isConnectedAddressPage && (
           <div className="stat-actions">
             <CreatePiggyBankButton />
           </div>
