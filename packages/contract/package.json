@@ -10,7 +10,7 @@
     "test": "hardhat test",
     "test:coverage": "hardhat coverage",
     "dev": "hardhat node",
-    "deploy:localhost": "hardhat run --network localhost scripts/deploy.ts"
+    "deploy:localhost": "hardhat deploy --network localhost"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.7.0",

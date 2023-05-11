@@ -1,19 +1,19 @@
 import Link from "next/link";
-import { Profile } from "./Profile";
+import { Account } from "./Account";
 import { Pacifico } from "next/font/google";
+import { Flex, Spacer } from "@chakra-ui/react";
 
 const pacifico = Pacifico({ weight: "400", subsets: ["latin"] });
 
 export const Header = () => (
-  <div className="navbar bg-neutral rounded-box">
-    <div className="flex-1">
-      <Link
-        href="/"
-        className={`btn btn-ghost normal-case text-3xl ${pacifico.className}`}
-      >
-        Hamm
-      </Link>
-    </div>
-    <Profile />
-  </div>
+  <Flex>
+    <Link
+      href="/"
+      className={`btn btn-ghost normal-case text-3xl ${pacifico.className}`}
+    >
+      Hamm
+    </Link>
+    <Spacer />
+    <Account />
+  </Flex>
 );

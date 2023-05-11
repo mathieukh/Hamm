@@ -1,11 +1,12 @@
 import { Header } from "@/components/Header";
 import { FC, PropsWithChildren } from "react";
+import { Container } from "@chakra-ui/react";
 
 const PageLayout: FC<PropsWithChildren> = ({ children }) => (
-  <div className="container mx-auto p-4">
+  <Container maxW={"8xl"} pt={2}>
     <Header />
     {children}
-  </div>
+  </Container>
 );
 
 export default PageLayout;
