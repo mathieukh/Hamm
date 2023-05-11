@@ -36,35 +36,26 @@ export const AddressDropdown: FC = () => {
     <Menu>
       <MenuButton
         as={Button}
-        rightIcon={<ChevronDownIcon className="h-5 w-5" />}
+        rightIcon={<ChevronDownIcon width={20} height={20} />}
       >
         {truncatedAddress}
       </MenuButton>
       <MenuList>
         <MenuItem>
           <Link href={`/address/${address}`}>
-            <ItemWithIcon
-              leftIcon={<WalletIcon className="h-5 w-5" aria-hidden="true" />}
-            >
+            <ItemWithIcon leftIcon={<WalletIcon width={20} height={20} />}>
               My Piggies
             </ItemWithIcon>
           </Link>
         </MenuItem>
         <MenuItem onClick={() => copyAddress()}>
-          <ItemWithIcon
-            leftIcon={<ClipboardIcon className="h-5 w-5" aria-hidden="true" />}
-          >
+          <ItemWithIcon leftIcon={<ClipboardIcon width={20} height={20} />}>
             Copy address
           </ItemWithIcon>
         </MenuItem>
         <MenuItem onClick={() => disconnect()}>
           <ItemWithIcon
-            leftIcon={
-              <ArrowLeftOnRectangleIcon
-                className="h-5 w-5"
-                aria-hidden="true"
-              />
-            }
+            leftIcon={<ArrowLeftOnRectangleIcon width={20} height={20} />}
           >
             Disconnect
           </ItemWithIcon>

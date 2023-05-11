@@ -1,13 +1,22 @@
 import { FC } from "react";
 import { PiggyBanksCounter } from "../components/PiggyBanksCounter";
-import { Address } from "wagmi";
+import { Address, useNetwork } from "wagmi";
+import { Box, Heading, Stack } from "@chakra-ui/react";
+import { CreatePiggyBankButton } from "../components/CreatePiggyBankButton";
 
 export const AddressPageContent: FC<{ address: Address }> = ({ address }) => {
+  const { chain } = useNetwork();
   return (
-    <div className="mt-4">
-      <div className="flex flex-row justify-between items-center">
+    <Box marginTop={5}>
+      <Stack gap={2} maxWidth={"max-content"}>
+        <Heading size={"lg"}>Piggy banks</Heading>
         <PiggyBanksCounter address={address} />
-      </div>
-    </div>
+        {chain && !chain.unsupported && (
+          <CreatePiggyBankButton size={"sm"} variant={"outline"}>
+            Create a piggy bank
+          </CreatePiggyBankButton>
+        )}
+      </Stack>
+    </Box>
   );
 };

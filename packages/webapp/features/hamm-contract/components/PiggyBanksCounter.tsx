@@ -1,40 +1,67 @@
 import { FC } from "react";
-import { CreatePiggyBankButton } from "./CreatePiggyBankButton";
-import { Address, useAccount } from "wagmi";
+import { Address, Chain } from "wagmi";
 import { useHammGetPiggyBankIdsForAddress } from "@/lib/hamm";
 import { useContractAddress } from "../hooks";
+import {
+  Text,
+  Stat,
+  StatLabel,
+  StatNumber,
+  StatGroup,
+  Stack,
+  Heading,
+  Spinner,
+  IconButton,
+} from "@chakra-ui/react";
+import { supportedChains } from "@/config";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
 
-export const PiggyBanksCounter: FC<{ address: Address }> = ({ address }) => {
-  const contractAddress = useContractAddress();
-  const { data: piggyBanksIds, status } = useHammGetPiggyBankIdsForAddress({
+const PiggyBanksCounterForChain: FC<{ chain: Chain; address: Address }> = ({
+  chain,
+  address,
+}) => {
+  const contractAddress = useContractAddress(chain.id);
+  const {
+    data: piggyBanksIds,
+    status,
+    refetch,
+  } = useHammGetPiggyBankIdsForAddress({
     address: contractAddress,
+    chainId: chain.id,
     args: [address],
   });
-  const { address: connectedAddress } = useAccount();
-  const isConnectedAddressPage = connectedAddress == address;
-  if (status === "error")
-    return (
-      <span className="text-xl font-bold text-red-600 rounded-sm p-2 bg-red-300/40">
-        Fail to fetch piggy banks ids
-      </span>
-    );
+  const StatContent: FC = () => {
+    if (status === "success") return <>{piggyBanksIds?.length}</>;
+    if (status === "loading") return <Spinner />;
+    if (status === "error")
+      return (
+        <IconButton
+          variant="ghost"
+          aria-label="error-on-fetch-piggy-ids"
+          onClick={() => refetch()}
+          icon={<ArrowPathIcon width={25} height={25} />}
+        />
+      );
+    return null;
+  };
   return (
-    <div className="stats bg-neutral">
-      <div className="stat">
-        <div className="stat-value text-secondary">
-          {status === "loading" ? (
-            <progress className="progress progress-secondary w-10"></progress>
-          ) : (
-            piggyBanksIds?.length
-          )}
-        </div>
-        <div className="stat-title">Piggy banks</div>
-        {isConnectedAddressPage && (
-          <div className="stat-actions">
-            <CreatePiggyBankButton />
-          </div>
-        )}
-      </div>
-    </div>
+    <Stat flex={"auto"}>
+      <StatLabel fontSize={"xs"}>{chain.name}</StatLabel>
+      <StatNumber>
+        <StatContent />
+      </StatNumber>
+    </Stat>
   );
 };
+
+export const PiggyBanksCounter: FC<{ address: Address }> = ({ address }) => (
+  <StatGroup gap={4}>
+    {supportedChains.map((chain) => (
+      <PiggyBanksCounterForChain
+        key={chain.id}
+        chain={chain}
+        address={address}
+      />
+    ))}
+  </StatGroup>
+);

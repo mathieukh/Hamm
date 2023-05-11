@@ -21,7 +21,7 @@ export const ChooseChainDropdown: FC = () => {
     <Menu>
       <MenuButton
         as={Button}
-        rightIcon={<ChevronDownIcon className="h-5 w-5" />}
+        rightIcon={<ChevronDownIcon width={20} height={20} />}
       >
         <ChainAvatar />
       </MenuButton>

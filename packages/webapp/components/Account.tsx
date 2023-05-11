@@ -17,9 +17,9 @@ export const Account: FC = () => {
       </Button>
     );
   return (
-    <div className="flex flex-row gap-2">
+    <>
       <AddressDropdown />
       <ChooseChainDropdown />
-    </div>
+    </>
   );
 };
