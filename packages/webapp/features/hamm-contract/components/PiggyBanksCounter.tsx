@@ -8,8 +8,6 @@ import {
   StatLabel,
   StatNumber,
   StatGroup,
-  Stack,
-  Heading,
   Spinner,
   IconButton,
 } from "@chakra-ui/react";
@@ -29,9 +27,9 @@ const PiggyBanksCounterForChain: FC<{ chain: Chain; address: Address }> = ({
     address: contractAddress,
     chainId: chain.id,
     args: [address],
+    watch: true,
   });
   const StatContent: FC = () => {
-    if (status === "success") return <>{piggyBanksIds?.length}</>;
     if (status === "loading") return <Spinner />;
     if (status === "error")
       return (
@@ -42,6 +40,7 @@ const PiggyBanksCounterForChain: FC<{ chain: Chain; address: Address }> = ({
           icon={<ArrowPathIcon width={25} height={25} />}
         />
       );
+    if (status === "success") return <>{piggyBanksIds?.length}</>;
     return null;
   };
   return (
