@@ -1,5 +1,4 @@
 import {
-  useHammDepositPiggyBank,
   useHammGetPiggyBankById,
   useHammWithdrawalPiggyBank,
 } from "@/lib/hamm";
@@ -16,7 +15,6 @@ import {
   StatLabel,
   StatNumber,
   Spinner,
-  Divider,
   ButtonProps,
   Modal,
   ModalBody,
@@ -33,10 +31,8 @@ import { BigNumber, BigNumberish, ethers } from "ethers";
 import { useAccount, useToken } from "wagmi";
 import { truncateAddress } from "@/utils";
 import Link from "next/link";
-import { PlusCircleIcon } from "@heroicons/react/24/outline";
-import { write } from "fs";
-import { CreatePiggyBankForm } from "./CreatePiggyBankForm";
 import { DepositPiggyBankForm } from "./DepositPiggyBankForm";
+import { WithdrawalPiggyBankForm } from "./WithdrawalPiggyBankForm";
 
 const Balance: FC<{
   balance: BigNumberish;
@@ -90,16 +86,23 @@ const WithdrawPiggyBankButton: FC<
     chainId: chain.id,
     args: [piggyBankId, tip],
   });
+  const { isOpen, onOpen, onClose } = useDisclosure();
   return (
-    <Button
-      colorScheme="red"
-      variant={"outline"}
-      {...props}
-      isLoading={isLoading}
-      onClick={() => withdrawPiggyBank()}
-    >
-      Withdraw
-    </Button>
+    <>
+      <Button variant={"outline"} colorScheme="red" {...props} onClick={onOpen}>
+        {props.children ?? "Withdraw"}
+      </Button>
+      <Modal isOpen={isOpen} onClose={onClose} isCentered={true} size={"xs"}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Withdraw</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <WithdrawalPiggyBankForm chain={chain} piggyBankId={piggyBankId} />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+    </>
   );
 };
 
