@@ -30,7 +30,7 @@ export const CreatePiggyBankButton: FC<ButtonProps> = (props) => {
           <ModalHeader>Create a piggy bank</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <CreatePiggyBankForm />
+            <CreatePiggyBankForm onPiggyBankCreated={onClose} />
           </ModalBody>
         </ModalContent>
       </Modal>

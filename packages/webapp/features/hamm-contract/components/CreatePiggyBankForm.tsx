@@ -9,14 +9,18 @@ import {
   Textarea,
   Text,
   Stack,
+  useToast,
 } from "@chakra-ui/react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useContractAddress } from "../hooks";
 import { z } from "zod";
-import { Address, useAccount } from "wagmi";
+import { Address, useAccount, useNetwork } from "wagmi";
+import { waitForTransaction } from "@wagmi/core";
 import { ethers } from "ethers";
 import { MyAddressInput } from "./MyAddressInput";
+import { FC } from "react";
+import { truncateAddress } from "@/utils";
 
 const EthAddress = z.preprocess(
   String,
@@ -33,12 +37,15 @@ const CreatePiggyBankSchema = z.object({
 
 type FormValues = z.infer<typeof CreatePiggyBankSchema>;
 
-export const CreatePiggyBankForm = () => {
+export const CreatePiggyBankForm: FC<{
+  onPiggyBankCreated: () => void;
+}> = ({ onPiggyBankCreated }) => {
   const contractAddress = useContractAddress();
   const { writeAsync: createPiggyBank } = useHammCreateNewPiggyBank({
     address: contractAddress,
   });
   const { address } = useAccount();
+  const { chain } = useNetwork();
   const {
     control,
     handleSubmit,
@@ -52,6 +59,7 @@ export const CreatePiggyBankForm = () => {
       withdrawerAddress: address,
     },
   });
+  const toast = useToast();
   const onSubmit: SubmitHandler<FormValues> = (values) => {
     const {
       beneficiaryAddress,
@@ -68,7 +76,35 @@ export const CreatePiggyBankForm = () => {
         description,
         tokenContractAddress,
       ],
-    });
+    }).then(({ hash }) =>
+      waitForTransaction({
+        chainId: chain?.id,
+        hash,
+      }).then((transactionReceipt) => {
+        if (transactionReceipt.status === "success") {
+          toast({ status: "success", title: "Piggy bank created !" });
+          onPiggyBankCreated();
+        } else {
+          toast({
+            status: "error",
+            title: "An error occurred",
+            description: (
+              <a
+                href={
+                  new URL(
+                    `/tx/${transactionReceipt.transactionHash}`,
+                    chain?.blockExplorers?.default.url
+                  ).href
+                }
+              >
+                {truncateAddress(transactionReceipt.transactionHash)}
+              </a>
+            ),
+          });
+        }
+        transactionReceipt.status;
+      })
+    );
   };
 
   return (
