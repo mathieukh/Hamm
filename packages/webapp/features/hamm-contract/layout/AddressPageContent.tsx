@@ -1,13 +1,15 @@
 import { FC } from "react";
 import { PiggyBanksCounter } from "../components/PiggyBanksCounter";
 import { Address, useNetwork } from "wagmi";
-import { Box, Heading, Stack } from "@chakra-ui/react";
+import { Divider, Heading, Stack } from "@chakra-ui/react";
 import { CreatePiggyBankButton } from "../components/CreatePiggyBankButton";
+import { PiggyBanksGridForChain } from "../components/PiggyBanksGridForChain";
+import { supportedChains } from "@/config";
 
 export const AddressPageContent: FC<{ address: Address }> = ({ address }) => {
   const { chain } = useNetwork();
   return (
-    <Box marginTop={5}>
+    <Stack marginTop={5} gap={2}>
       <Stack gap={2} maxWidth={"max-content"}>
         <Heading size={"lg"}>Piggy banks</Heading>
         <PiggyBanksCounter address={address} />
@@ -17,6 +19,14 @@ export const AddressPageContent: FC<{ address: Address }> = ({ address }) => {
           </CreatePiggyBankButton>
         )}
       </Stack>
-    </Box>
+      <Divider />
+      {supportedChains.map((chain) => (
+        <PiggyBanksGridForChain
+          key={chain.id}
+          chain={chain}
+          address={address}
+        />
+      ))}
+    </Stack>
   );
 };

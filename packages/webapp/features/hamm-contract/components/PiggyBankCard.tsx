@@ -1,0 +1,177 @@
+import {
+  useHammDepositPiggyBank,
+  useHammGetPiggyBankById,
+  useHammWithdrawalPiggyBank,
+} from "@/lib/hamm";
+import {
+  Card,
+  CardHeader,
+  Heading,
+  CardBody,
+  CardFooter,
+  Text,
+  Button,
+  Skeleton,
+  Stat,
+  StatLabel,
+  StatNumber,
+  Spinner,
+  Divider,
+  ButtonProps,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalHeader,
+  ModalOverlay,
+  useDisclosure,
+} from "@chakra-ui/react";
+import { FC, PropsWithChildren, useState } from "react";
+import { Chain, Address } from "viem";
+import { useContractAddress } from "../hooks";
+import { BigNumber, BigNumberish, ethers } from "ethers";
+import { useAccount, useToken } from "wagmi";
+import { truncateAddress } from "@/utils";
+import Link from "next/link";
+import { PlusCircleIcon } from "@heroicons/react/24/outline";
+import { write } from "fs";
+import { CreatePiggyBankForm } from "./CreatePiggyBankForm";
+import { DepositPiggyBankForm } from "./DepositPiggyBankForm";
+
+const Balance: FC<{
+  balance: BigNumberish;
+  tokenAddress: Address;
+  chain: Chain;
+}> = ({ balance, tokenAddress, chain }) => {
+  const { data, status } = useToken({
+    address: tokenAddress,
+    chainId: chain.id,
+  });
+  if (status === "loading") return <Spinner />;
+  if (status === "error") return <>Error</>;
+  if (data === undefined) return null;
+  return (
+    <>
+      {ethers.utils.formatUnits(balance, data.decimals)} {data.symbol}
+    </>
+  );
+};
+
+const DepositPiggyBankButton: FC<
+  ButtonProps & { chain: Chain; piggyBankId: bigint }
+> = ({ chain, piggyBankId, ...props }) => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  return (
+    <>
+      <Button {...props} onClick={onOpen}>
+        {props.children ?? "Deposit"}
+      </Button>
+      <Modal isOpen={isOpen} onClose={onClose} isCentered={true} size={"xs"}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Deposit in piggy bank</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <DepositPiggyBankForm chain={chain} piggyBankId={piggyBankId} />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+    </>
+  );
+};
+
+const WithdrawPiggyBankButton: FC<
+  PropsWithChildren<{ chain: Chain; piggyBankId: bigint }>
+> = ({ chain, piggyBankId, ...props }) => {
+  const contractAddress = useContractAddress(chain.id);
+  const [tip, setTip] = useState<bigint>(BigNumber.from(0).toBigInt());
+  const { write: withdrawPiggyBank, isLoading } = useHammWithdrawalPiggyBank({
+    address: contractAddress,
+    chainId: chain.id,
+    args: [piggyBankId, tip],
+  });
+  return (
+    <Button
+      colorScheme="red"
+      variant={"outline"}
+      {...props}
+      isLoading={isLoading}
+      onClick={() => withdrawPiggyBank()}
+    >
+      Withdraw
+    </Button>
+  );
+};
+
+export const PiggyBankCard: FC<{
+  chain: Chain;
+  piggyBankId: bigint;
+}> = ({ chain, piggyBankId }) => {
+  const contractAddress = useContractAddress(chain.id);
+  const { data: piggyBank, status } = useHammGetPiggyBankById({
+    address: contractAddress,
+    chainId: chain.id,
+    args: [piggyBankId],
+    watch: true,
+  });
+  const { address: connectedAddress } = useAccount();
+  if (piggyBank === undefined) return null;
+  const [
+    name,
+    description,
+    tokenContractAddress,
+    balance,
+    beneficiaryAddress,
+    withdrawerAddress,
+  ] = piggyBank;
+  return (
+    <Skeleton isLoaded={status !== "loading"}>
+      <Card maxW={"md"} variant={"elevated"} size={"sm"}>
+        <CardHeader>
+          <Heading size="md">{name}</Heading>
+        </CardHeader>
+        <CardBody display={"flex"} gap={2} flexDirection={"column"}>
+          <Stat flex={"auto"}>
+            <StatLabel>Balance</StatLabel>
+            <StatNumber>
+              <Balance
+                balance={balance}
+                chain={chain}
+                tokenAddress={tokenContractAddress}
+              />
+            </StatNumber>
+          </Stat>
+          <Text>{description}</Text>
+          <Text fontSize={"xs"}>
+            <Text as={"span"} fontWeight={"semibold"}>
+              Contract address:{" "}
+            </Text>
+            {tokenContractAddress}
+          </Text>
+          <Text fontSize={"xs"}>
+            <Text as={"span"} fontWeight={"semibold"}>
+              Beneficiary address:{" "}
+            </Text>
+            <Link href={`/address/${beneficiaryAddress}`}>
+              {truncateAddress(beneficiaryAddress)}
+            </Link>
+          </Text>
+          <Text fontSize={"xs"}>
+            <Text as={"span"} fontWeight={"semibold"}>
+              Withdrawer address:{" "}
+            </Text>
+            <Link href={`/address/${withdrawerAddress}`}>
+              {truncateAddress(withdrawerAddress)}
+            </Link>
+          </Text>
+        </CardBody>
+        <CardFooter gap={2}>
+          <DepositPiggyBankButton chain={chain} piggyBankId={piggyBankId} />
+          {connectedAddress === withdrawerAddress && (
+            <WithdrawPiggyBankButton chain={chain} piggyBankId={piggyBankId} />
+          )}
+        </CardFooter>
+      </Card>
+    </Skeleton>
+  );
+};
