@@ -10,7 +10,8 @@
     "test": "hardhat test",
     "test:coverage": "hardhat coverage",
     "dev": "hardhat node",
-    "deploy:localhost": "hardhat deploy --network localhost"
+    "deploy:contract:localhost": "hardhat deploy --network localhost",
+    "deploy:token:localhost": "hardhat deploy:token --network localhost"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.7.0",

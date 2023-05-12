@@ -1,41 +1,27 @@
 import { expect } from "chai";
-import { ethers } from "hardhat";
+import hre from "hardhat";
 import { BigNumber } from "ethers";
-
-const toBytes32 = (bn: BigNumber) => {
-  return ethers.utils.hexlify(ethers.utils.zeroPad(bn.toHexString(), 32));
-};
-
-const setStorageAt = async (address: string, index: string, value: string) => {
-  await ethers.provider.send("hardhat_setStorageAt", [address, index, value]);
-  await ethers.provider.send("evm_mine", []); // Just mines to the next block
-};
+import { changeBalanceForUser as changeBalanceForUserInternal } from "./utils";
 
 const deployHammContract = async ({
   tipReceiverAddress,
 }: { tipReceiverAddress?: string } = {}) => {
   // Contracts are deployed using the first signer/account by default
-  const [owner, otherAccount] = await ethers.getSigners();
-  const ERC20TokenFactory = await ethers.getContractFactory("ERC20");
-  const HammFactory = await ethers.getContractFactory("Hamm");
+  const [owner, otherAccount] = await hre.ethers.getSigners();
+  const ERC20TokenFactory = await hre.ethers.getContractFactory("ERC20");
+  const HammFactory = await hre.ethers.getContractFactory("Hamm");
   const hamm = await HammFactory.deploy(tipReceiverAddress ?? owner.address);
   const fakeToken = await ERC20TokenFactory.deploy("FakeToken", "FAKE");
-  const changeBalanceForUser = async (
+  const changeBalanceForUser = (
     userAddress: string,
     locallyManipulatedBalance: BigNumber
-  ) => {
-    // Get storage slot index
-    const index = ethers.utils.solidityKeccak256(
-      ["uint256", "uint256"],
-      [userAddress, 0] // key, slot
-    );
-    // Manipulate local balance (needs to be bytes32 string)
-    await setStorageAt(
+  ) =>
+    changeBalanceForUserInternal(
+      hre,
       fakeToken.address,
-      index.toString(),
-      toBytes32(locallyManipulatedBalance).toString()
+      userAddress,
+      locallyManipulatedBalance
     );
-  };
   return { owner, otherAccount, hamm, fakeToken, changeBalanceForUser };
 };
 
@@ -527,7 +513,7 @@ describe("PiggyBank", () => {
 
   describe("Tip", () => {
     it("Given a Hamm contract with a tip receiver address, When a user withdraw its piggy bank and tip, Then the tip receiver address will receive the tip", async () => {
-      const [userA] = await ethers.getSigners();
+      const [userA] = await hre.ethers.getSigners();
       const {
         hamm,
         otherAccount: userB,
@@ -571,7 +557,7 @@ describe("PiggyBank", () => {
     });
 
     it("Given a Hamm contract with a tip receiver address, When a user withdraw its piggy bank and tip above the amount of the piggy bank, Then it must reverts the transaction", async () => {
-      const [userA] = await ethers.getSigners();
+      const [userA] = await hre.ethers.getSigners();
       const {
         hamm,
         otherAccount: userB,
