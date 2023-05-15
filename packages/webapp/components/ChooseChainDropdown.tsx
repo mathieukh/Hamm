@@ -1,37 +1,37 @@
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 import { supportedChains } from "@/config";
-import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
-import { Menu, MenuButton, Button, MenuList, MenuItem } from "@chakra-ui/react";
-
-const ChainAvatar: FC = () => {
-  const { chain } = useNetwork();
-  if (chain === undefined) return null;
-  if (chain.unsupported)
-    return <button className="text-red-600">Wrong network</button>;
-  const { name } = chain;
-  return <>{name}</>;
-};
+import { useNetwork, useSwitchNetwork } from "wagmi";
+import { MenuOptionGroup, MenuItemOption, useToast } from "@chakra-ui/react";
 
 export const ChooseChainDropdown: FC = () => {
-  const { isConnected } = useAccount();
-  const { switchNetwork } = useSwitchNetwork();
-  if (!isConnected) return null;
+  const { chain } = useNetwork();
+  const { switchNetworkAsync } = useSwitchNetwork();
+  const toast = useToast();
+  const [chainId, setChainId] = useState(String(chain?.id));
+  useEffect(() => {
+    setChainId(String(chain?.id));
+  }, [chain?.id]);
+  if (!chain) return null;
   return (
-    <Menu>
-      <MenuButton
-        as={Button}
-        rightIcon={<ChevronDownIcon width={20} height={20} />}
-      >
-        <ChainAvatar />
-      </MenuButton>
-      <MenuList>
-        {supportedChains.map(({ id, name }) => (
-          <MenuItem key={id} onClick={() => switchNetwork?.(id)}>
-            {name}
-          </MenuItem>
-        ))}
-      </MenuList>
-    </Menu>
+    <MenuOptionGroup
+      value={chainId}
+      title="Network"
+      type="radio"
+      onChange={(idToSwitch) => {
+        switchNetworkAsync?.(Number(idToSwitch)).catch(() => {
+          toast({
+            status: "error",
+            title: "Oups",
+            description: "Can not switch the network",
+          });
+        });
+      }}
+    >
+      {supportedChains.map(({ id, name }) => (
+        <MenuItemOption key={id} value={String(id)}>
+          {name}
+        </MenuItemOption>
+      ))}
+    </MenuOptionGroup>
   );
 };

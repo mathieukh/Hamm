@@ -46,7 +46,7 @@ export const AddressPageContent: FC<{ address: Address }> = ({ address }) => {
         )}
       </Stack>
       <Divider />
-      <SimpleGrid gap={3} minChildWidth="sm" justifyItems={"center"}>
+      <SimpleGrid gap={3} columns={{ sm: 1, md: 2, xl: 3 }}>
         {supportedChains.map((chain) => (
           <PiggyBanksGridForChain
             key={chain.id}

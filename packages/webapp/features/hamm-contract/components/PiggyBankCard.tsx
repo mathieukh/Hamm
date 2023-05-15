@@ -1,7 +1,4 @@
-import {
-  useHammGetPiggyBankById,
-  useHammWithdrawalPiggyBank,
-} from "@/lib/hamm";
+import { useHammDeletePiggyBank, useHammGetPiggyBankById } from "@/lib/hamm";
 import {
   Card,
   CardHeader,
@@ -23,16 +20,22 @@ import {
   ModalHeader,
   ModalOverlay,
   useDisclosure,
+  Spacer,
 } from "@chakra-ui/react";
-import { FC, PropsWithChildren, useState } from "react";
+import { FC } from "react";
 import { Chain, Address } from "viem";
 import { useContractAddress } from "../hooks";
-import { BigNumber, BigNumberish, ethers } from "ethers";
+import { BigNumberish, ethers } from "ethers";
 import { useAccount, useNetwork, useSwitchNetwork, useToken } from "wagmi";
 import { truncateAddress } from "@/utils";
 import Link from "next/link";
 import { DepositPiggyBankForm } from "./DepositPiggyBankForm";
 import { WithdrawalPiggyBankForm } from "./WithdrawalPiggyBankForm";
+import {
+  TrashIcon,
+  BanknotesIcon,
+  ArrowDownCircleIcon,
+} from "@heroicons/react/24/outline";
 
 const Balance: FC<{
   balance: BigNumberish;
@@ -59,7 +62,12 @@ const DepositPiggyBankButton: FC<
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <>
-      <Button {...props} onClick={onOpen}>
+      <Button
+        variant={"outline"}
+        leftIcon={<ArrowDownCircleIcon width={15} height={15} />}
+        {...props}
+        onClick={onOpen}
+      >
         {props.children ?? "Deposit"}
       </Button>
       <Modal isOpen={isOpen} onClose={onClose} isCentered={true} size={"xs"}>
@@ -77,19 +85,18 @@ const DepositPiggyBankButton: FC<
 };
 
 const WithdrawPiggyBankButton: FC<
-  PropsWithChildren<{ chain: Chain; piggyBankId: bigint }>
+  ButtonProps & { chain: Chain; piggyBankId: bigint }
 > = ({ chain, piggyBankId, ...props }) => {
-  const contractAddress = useContractAddress(chain.id);
-  const [tip, setTip] = useState<bigint>(BigNumber.from(0).toBigInt());
-  const { write: withdrawPiggyBank, isLoading } = useHammWithdrawalPiggyBank({
-    address: contractAddress,
-    chainId: chain.id,
-    args: [piggyBankId, tip],
-  });
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <>
-      <Button variant={"outline"} colorScheme="red" {...props} onClick={onOpen}>
+      <Button
+        variant={"outline"}
+        colorScheme="green"
+        leftIcon={<BanknotesIcon width={15} height={15} />}
+        {...props}
+        onClick={onOpen}
+      >
         {props.children ?? "Withdraw"}
       </Button>
       <Modal isOpen={isOpen} onClose={onClose} isCentered={true} size={"xs"}>
@@ -103,6 +110,28 @@ const WithdrawPiggyBankButton: FC<
         </ModalContent>
       </Modal>
     </>
+  );
+};
+
+const DeletePiggyBankButton: FC<
+  ButtonProps & { chain: Chain; piggyBankId: bigint }
+> = ({ chain, piggyBankId, ...props }) => {
+  const contractAddress = useContractAddress(chain.id);
+  const { write: deletePiggyBank, isLoading } = useHammDeletePiggyBank({
+    address: contractAddress,
+    args: [piggyBankId],
+  });
+  return (
+    <Button
+      variant={"outline"}
+      colorScheme="red"
+      isLoading={isLoading}
+      leftIcon={<TrashIcon height={15} width={15} />}
+      {...props}
+      onClick={() => deletePiggyBank()}
+    >
+      {props.children ?? "Delete"}
+    </Button>
   );
 };
 
@@ -135,6 +164,7 @@ export const PiggyBankCard: FC<{
     if (chain.id !== connectedChain?.id)
       return (
         <Button
+          size={"sm"}
           variant={"outline"}
           colorScheme={"orange"}
           onClick={() => switchNetwork?.()}
@@ -144,17 +174,53 @@ export const PiggyBankCard: FC<{
       );
     return (
       <>
-        <DepositPiggyBankButton chain={chain} piggyBankId={piggyBankId} />
+        <DepositPiggyBankButton
+          size={"sm"}
+          chain={chain}
+          piggyBankId={piggyBankId}
+        />
         {connectedAddress === withdrawerAddress && (
-          <WithdrawPiggyBankButton chain={chain} piggyBankId={piggyBankId} />
+          <WithdrawPiggyBankButton
+            size={"sm"}
+            chain={chain}
+            piggyBankId={piggyBankId}
+          />
+        )}
+        {connectedAddress === beneficiaryAddress && (
+          <>
+            <Spacer />
+            <DeletePiggyBankButton
+              size={"sm"}
+              chain={chain}
+              piggyBankId={piggyBankId}
+            />
+          </>
         )}
       </>
     );
   };
 
+  const TokenLink = () => {
+    const { blockExplorers } = chain;
+    if (blockExplorers === undefined)
+      return <>{truncateAddress(tokenContractAddress)}</>;
+    return (
+      <a
+        href={
+          new URL(
+            `/address/${tokenContractAddress}`,
+            blockExplorers.default.url
+          ).href
+        }
+      >
+        {truncateAddress(tokenContractAddress)}
+      </a>
+    );
+  };
+
   return (
     <Skeleton isLoaded={status !== "loading"}>
-      <Card maxW={"md"} variant={"elevated"} size={"sm"}>
+      <Card variant={"elevated"} size={"sm"}>
         <CardHeader>
           <Heading size="md">
             <Link
@@ -187,7 +253,7 @@ export const PiggyBankCard: FC<{
             <Text as={"span"} fontWeight={"semibold"}>
               Contract address:{" "}
             </Text>
-            {tokenContractAddress}
+            <TokenLink />
           </Text>
           <Text fontSize={"xs"}>
             <Text as={"span"} fontWeight={"semibold"}>

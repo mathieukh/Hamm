@@ -1,6 +1,5 @@
 import { FC } from "react";
 import { AddressDropdown } from "./AddressDropdown";
-import { ChooseChainDropdown } from "./ChooseChainDropdown";
 import { useAccount, useConnect } from "wagmi";
 import { Button } from "@chakra-ui/react";
 
@@ -16,10 +15,5 @@ export const Account: FC = () => {
         Connect wallet
       </Button>
     );
-  return (
-    <>
-      <AddressDropdown />
-      <ChooseChainDropdown />
-    </>
-  );
+  return <AddressDropdown />;
 };

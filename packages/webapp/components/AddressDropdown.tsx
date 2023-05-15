@@ -36,6 +36,7 @@ export const AddressDropdown: FC = () => {
     <Menu>
       <MenuButton
         as={Button}
+        variant={"outline"}
         rightIcon={<ChevronDownIcon width={20} height={20} />}
       >
         {truncatedAddress}
