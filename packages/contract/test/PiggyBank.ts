@@ -1,7 +1,9 @@
 import { expect } from "chai";
-import hre from "hardhat";
+import hre, { ethers } from "hardhat";
 import { BigNumber } from "ethers";
 import { changeBalanceForUser as changeBalanceForUserInternal } from "./utils";
+
+export const FIRST_PIGGY_BANK = BigNumber.from(1);
 
 const deployHammContract = async ({
   tipReceiverAddress,
@@ -40,7 +42,7 @@ describe("PiggyBank", () => {
         );
       await expect(tx)
         .to.emit(hamm, "PiggyBankCreated")
-        .withArgs(BigNumber.from(0));
+        .withArgs(FIRST_PIGGY_BANK);
     });
 
     it("Given a user A, When creating piggy banks for the sender, Then the piggy banks ids can be retrieve for the sender", async () => {
@@ -54,7 +56,7 @@ describe("PiggyBank", () => {
         )
         .then((tx) => tx.wait());
       const ownedIds = await hamm.getPiggyBankIdsForAddress(userA.address);
-      expect(ownedIds).to.eql([BigNumber.from(0)]);
+      expect(ownedIds).to.eql([FIRST_PIGGY_BANK]);
     });
 
     it("Given a user A, When creating piggy banks for user B, Then the user A must not have piggy banks", async () => {
@@ -98,7 +100,7 @@ describe("PiggyBank", () => {
       const ownedIdsByUserB = await hamm.getPiggyBankIdsForAddress(
         userB.address
       );
-      expect(ownedIdsByUserB).to.eql([BigNumber.from(0)]);
+      expect(ownedIdsByUserB).to.eql([FIRST_PIGGY_BANK]);
     });
   });
 
@@ -113,7 +115,7 @@ describe("PiggyBank", () => {
       await hamm
         .connect(userA)
         .createNewPiggyBankForSender(
-          "Piggy bank 0",
+          "Piggy bank 1",
           "Piggy bank of the user A",
           fakeToken.address
         )
@@ -121,15 +123,15 @@ describe("PiggyBank", () => {
       await hamm
         .connect(userB)
         .createNewPiggyBankForSender(
-          "Piggy bank 1",
+          "Piggy bank 2",
           "Piggy bank of the user B",
           fakeToken.address
         )
         .then((tx) => tx.wait());
       const idsForUserA = await hamm.getPiggyBankIdsForAddress(userA.address);
       const idsForUserB = await hamm.getPiggyBankIdsForAddress(userB.address);
-      expect(idsForUserA).to.eql([BigNumber.from(0)]);
-      expect(idsForUserB).to.eql([BigNumber.from(1)]);
+      expect(idsForUserA).to.eql([FIRST_PIGGY_BANK]);
+      expect(idsForUserB).to.eql([FIRST_PIGGY_BANK.add(1)]);
     });
 
     it("Given a piggy bank, When retrieving it, Then all the data must be available", async () => {
@@ -137,7 +139,7 @@ describe("PiggyBank", () => {
       await hamm
         .connect(userA)
         .createNewPiggyBankForSender(
-          "Piggy bank 0",
+          "Piggy bank 1",
           "Piggy bank of the user",
           fakeToken.address
         )
@@ -148,10 +150,10 @@ describe("PiggyBank", () => {
         description,
         tokenContractAddress,
         name,
-      } = await hamm.getPiggyBankById(BigNumber.from(0));
+      } = await hamm.getPiggyBankById(FIRST_PIGGY_BANK);
       expect(balance).to.eql(BigNumber.from(0));
       expect(beneficiaryAddress).to.eql(userA.address);
-      expect(name).to.eql("Piggy bank 0");
+      expect(name).to.eql("Piggy bank 1");
       expect(description).to.eql("Piggy bank of the user");
       expect(tokenContractAddress).to.eql(fakeToken.address);
     });
@@ -168,12 +170,12 @@ describe("PiggyBank", () => {
       await hamm
         .connect(userA)
         .createNewPiggyBankForSender(
-          "Piggy bank 0",
+          "Piggy bank 1",
           "Piggy bank of the user",
           fakeToken.address
         )
         .then((tx) => tx.wait());
-      const piggyBankId = BigNumber.from(0);
+      const piggyBankId = FIRST_PIGGY_BANK;
       const { balance: balanceBefore } = await hamm.getPiggyBankById(
         piggyBankId
       );
@@ -215,12 +217,12 @@ describe("PiggyBank", () => {
         .createNewPiggyBank(
           userA.address,
           userB.address,
-          "Piggy bank 0",
+          "Piggy bank 1",
           "Piggy bank of the user",
           fakeToken.address
         )
         .then((tx) => tx.wait());
-      const piggyBankId = BigNumber.from(0);
+      const piggyBankId = FIRST_PIGGY_BANK;
       await changeBalanceForUser(userA.address, BigNumber.from(100_000));
 
       await fakeToken
@@ -259,12 +261,12 @@ describe("PiggyBank", () => {
         .createNewPiggyBank(
           userA.address,
           userB.address,
-          "Piggy bank 0",
+          "Piggy bank 1",
           "Piggy bank of the user",
           fakeToken.address
         )
         .then((tx) => tx.wait());
-      const piggyBankId = BigNumber.from(0);
+      const piggyBankId = FIRST_PIGGY_BANK;
       await changeBalanceForUser(userA.address, BigNumber.from(100_000));
 
       await fakeToken
@@ -296,12 +298,12 @@ describe("PiggyBank", () => {
       await hamm
         .connect(userA)
         .createNewPiggyBankForSender(
-          "Piggy bank 0",
+          "Piggy bank 1",
           "Piggy bank of the user",
           fakeToken.address
         )
         .then((tx) => tx.wait());
-      const piggyBankId = BigNumber.from(0);
+      const piggyBankId = FIRST_PIGGY_BANK;
       await changeBalanceForUser(userA.address, BigNumber.from(100_000));
       await fakeToken
         .connect(userA)
@@ -316,6 +318,29 @@ describe("PiggyBank", () => {
         hamm.connect(userB).withdrawalPiggyBank(piggyBankId, 0)
       ).to.be.revertedWith("Only withdrawer can call this function.");
     });
+
+    it("Given a user, When he wants to deposit on a non-existing piggy bank, Then it must revert", async () => {
+      const {
+        hamm,
+        owner: userA,
+        otherAccount: userB,
+        fakeToken,
+        changeBalanceForUser,
+      } = await deployHammContract();
+      const piggyBankId = FIRST_PIGGY_BANK;
+      await changeBalanceForUser(userA.address, BigNumber.from(100_000));
+      await fakeToken
+        .connect(userA)
+        .approve(hamm.address, BigNumber.from(200_000))
+        .then((tx) => tx.wait());
+      await expect(
+        hamm
+          .connect(userA)
+          .depositPiggyBank(piggyBankId, BigNumber.from(50_000))
+      ).revertedWith(
+        "You are depositing on a deleted or not created piggy bank"
+      );
+    });
   });
 
   describe("Retrieve piggy banks", () => {
@@ -324,23 +349,23 @@ describe("PiggyBank", () => {
       await hamm
         .connect(userA)
         .createNewPiggyBankForSender(
-          "Piggy bank 0",
-          "Bank 0",
+          "Piggy bank 1",
+          "Bank 1",
           fakeToken.address
         )
         .then((tx) => tx.wait());
       await hamm
         .connect(userA)
         .createNewPiggyBankForSender(
-          "Piggy bank 1",
-          "Bank 1",
+          "Piggy bank 2",
+          "Bank 2",
           fakeToken.address
         )
         .then((tx) => tx.wait());
       const ownedPiggyBanksIds = await hamm.connect(userA).getPiggyBanksIds();
       expect(ownedPiggyBanksIds).to.be.eql([
-        BigNumber.from(0),
-        BigNumber.from(1),
+        FIRST_PIGGY_BANK,
+        FIRST_PIGGY_BANK.add(1),
       ]);
     });
 
@@ -354,16 +379,16 @@ describe("PiggyBank", () => {
       await hamm
         .connect(userB)
         .createNewPiggyBankForSender(
-          "Piggy bank 0",
-          "Bank 0",
+          "Piggy bank 1",
+          "Bank 1",
           fakeToken.address
         )
         .then((tx) => tx.wait());
       await hamm
         .connect(userB)
         .createNewPiggyBankForSender(
-          "Piggy bank 1",
-          "Bank 1",
+          "Piggy bank 2",
+          "Bank 2",
           fakeToken.address
         )
         .then((tx) => tx.wait());
@@ -381,21 +406,13 @@ describe("PiggyBank", () => {
       await hamm
         .connect(userA)
         .createNewPiggyBankForSender(
-          "Piggy bank 0",
-          "Bank 0",
-          fakeToken.address
-        )
-        .then((tx) => tx.wait());
-      await hamm
-        .connect(userA)
-        .createNewPiggyBankForSender(
           "Piggy bank 1",
           "Bank 1",
           fakeToken.address
         )
         .then((tx) => tx.wait());
       await hamm
-        .connect(userB)
+        .connect(userA)
         .createNewPiggyBankForSender(
           "Piggy bank 2",
           "Bank 2",
@@ -410,12 +427,20 @@ describe("PiggyBank", () => {
           fakeToken.address
         )
         .then((tx) => tx.wait());
+      await hamm
+        .connect(userB)
+        .createNewPiggyBankForSender(
+          "Piggy bank 4",
+          "Bank 4",
+          fakeToken.address
+        )
+        .then((tx) => tx.wait());
       const ownedPiggyBanksIds = await hamm
         .connect(userA)
         .getPiggyBankIdsForAddress(userB.address);
       expect(ownedPiggyBanksIds).to.be.eql([
-        BigNumber.from(2),
         BigNumber.from(3),
+        BigNumber.from(4),
       ]);
     });
   });
@@ -433,12 +458,12 @@ describe("PiggyBank", () => {
         .createNewPiggyBank(
           userA.address,
           userB.address,
-          "Piggy bank 0",
+          "Piggy bank 1",
           "Piggy bank of the user",
           fakeToken.address
         )
         .then((tx) => tx.wait());
-      const piggyBankId = BigNumber.from(0);
+      const piggyBankId = FIRST_PIGGY_BANK;
       const { withdrawerAddress: withdrawerAddressBefore } =
         await hamm.getPiggyBankById(piggyBankId);
       expect(withdrawerAddressBefore).to.eql(userB.address);
@@ -463,12 +488,12 @@ describe("PiggyBank", () => {
         .createNewPiggyBank(
           userA.address,
           userB.address,
-          "Piggy bank 0",
+          "Piggy bank 1",
           "Piggy bank of the user",
           fakeToken.address
         )
         .then((tx) => tx.wait());
-      const piggyBankId = BigNumber.from(0);
+      const piggyBankId = FIRST_PIGGY_BANK;
       const { withdrawerAddress: withdrawerAddressBefore } =
         await hamm.getPiggyBankById(piggyBankId);
       expect(withdrawerAddressBefore).to.eql(userB.address);
@@ -493,12 +518,12 @@ describe("PiggyBank", () => {
         .createNewPiggyBank(
           userA.address,
           userA.address,
-          "Piggy bank 0",
+          "Piggy bank 1",
           "Piggy bank of the user",
           fakeToken.address
         )
         .then((tx) => tx.wait());
-      const piggyBankId = BigNumber.from(0);
+      const piggyBankId = FIRST_PIGGY_BANK;
       const { withdrawerAddress: withdrawerAddressBefore } =
         await hamm.getPiggyBankById(piggyBankId);
       expect(withdrawerAddressBefore).to.eql(userA.address);
@@ -523,12 +548,12 @@ describe("PiggyBank", () => {
       await hamm
         .connect(userB)
         .createNewPiggyBankForSender(
-          "Piggy bank 0",
+          "Piggy bank 1",
           "Piggy bank of the user B",
           fakeToken.address
         )
         .then((tx) => tx.wait());
-      const piggyBankId = BigNumber.from(0);
+      const piggyBankId = FIRST_PIGGY_BANK;
       await changeBalanceForUser(userB.address, BigNumber.from(100_000));
 
       await fakeToken
@@ -567,12 +592,12 @@ describe("PiggyBank", () => {
       await hamm
         .connect(userB)
         .createNewPiggyBankForSender(
-          "Piggy bank 0",
+          "Piggy bank 1",
           "Piggy bank of the user B",
           fakeToken.address
         )
         .then((tx) => tx.wait());
-      const piggyBankId = BigNumber.from(0);
+      const piggyBankId = FIRST_PIGGY_BANK;
       await changeBalanceForUser(userB.address, BigNumber.from(100_000));
 
       await fakeToken
@@ -588,6 +613,124 @@ describe("PiggyBank", () => {
       await expect(
         hamm.connect(userB).withdrawalPiggyBank(piggyBankId, 150_000)
       ).to.revertedWith("The tip is not correct");
+    });
+  });
+
+  describe("Delete a piggy bank", () => {
+    it("Given a user with a piggy bank, When it want to delete the piggy bank, Then it must be deleted", async () => {
+      const [userA] = await hre.ethers.getSigners();
+      const {
+        hamm,
+        otherAccount: userB,
+        fakeToken,
+      } = await deployHammContract({ tipReceiverAddress: userA.address });
+      await hamm
+        .connect(userB)
+        .createNewPiggyBankForSender(
+          "Piggy bank 1",
+          "Piggy bank of the user B",
+          fakeToken.address
+        )
+        .then((tx) => tx.wait());
+
+      await hamm
+        .connect(userB)
+        .deletePiggyBank(FIRST_PIGGY_BANK)
+        .then((tx) => tx.wait());
+
+      await expect(hamm.connect(userB).ownerOf(FIRST_PIGGY_BANK)).revertedWith(
+        "ERC721: invalid token ID"
+      );
+    });
+
+    it("Given a piggy bank with a balance, When it is deleted, Then it must be withdrawed and deleted", async () => {
+      const {
+        hamm,
+        owner: userA,
+        fakeToken,
+        changeBalanceForUser,
+      } = await deployHammContract();
+      await hamm
+        .connect(userA)
+        .createNewPiggyBankForSender(
+          "Piggy bank 1",
+          "Piggy bank of the user A",
+          fakeToken.address
+        )
+        .then((tx) => tx.wait());
+
+      await changeBalanceForUser(userA.address, BigNumber.from(100_000));
+
+      await fakeToken
+        .connect(userA)
+        .approve(hamm.address, BigNumber.from(200_000))
+        .then((tx) => tx.wait());
+
+      await hamm
+        .connect(userA)
+        .depositPiggyBank(FIRST_PIGGY_BANK, BigNumber.from(100_000))
+        .then((tx) => tx.wait());
+
+      const balanceBefore = await fakeToken.balanceOf(userA.address);
+      expect(balanceBefore).to.eql(BigNumber.from(0));
+
+      await hamm
+        .connect(userA)
+        .deletePiggyBank(FIRST_PIGGY_BANK)
+        .then((tx) => tx.wait());
+
+      const balanceAfter = await fakeToken.balanceOf(userA.address);
+      expect(balanceAfter).to.eql(BigNumber.from(100_000));
+    });
+
+    it("Given a user with deleted piggy banks, When retrieving the piggy banks owned by the user, Then it must returns the existing piggy banks", async () => {
+      const { hamm, owner: userA, fakeToken } = await deployHammContract();
+      await hamm
+        .connect(userA)
+        .createNewPiggyBankForSender(
+          "Piggy bank 1",
+          "Piggy bank of the user A",
+          fakeToken.address
+        )
+        .then((tx) => tx.wait());
+
+      await hamm
+        .connect(userA)
+        .createNewPiggyBankForSender(
+          "Piggy bank 2",
+          "Piggy bank of the user A",
+          fakeToken.address
+        )
+        .then((tx) => tx.wait());
+
+      await hamm
+        .connect(userA)
+        .deletePiggyBank(FIRST_PIGGY_BANK)
+        .then((tx) => tx.wait());
+
+      const ownedPiggyBanks = await hamm.connect(userA).getPiggyBanksIds();
+      expect(ownedPiggyBanks).to.eql([BigNumber.from(2)]);
+    });
+
+    it("Given a piggy bank owned by user A, When another user wants to delete the piggy bank, Then it must revert as only the owner can delete the piggy bank", async () => {
+      const {
+        hamm,
+        owner: userA,
+        otherAccount: userB,
+        fakeToken,
+      } = await deployHammContract();
+      await hamm
+        .connect(userA)
+        .createNewPiggyBankForSender(
+          "Piggy bank 1",
+          "Piggy bank of the user A",
+          fakeToken.address
+        )
+        .then((tx) => tx.wait());
+
+      await expect(
+        hamm.connect(userB).deletePiggyBank(FIRST_PIGGY_BANK)
+      ).revertedWith("Only owner can call this function.");
     });
   });
 });

@@ -12,7 +12,8 @@ struct PiggyBank {
 }
 
 contract Hamm is ERC721 {
-    uint private numPiggyBanks = 0;
+    uint private constant FIRST_PIGGY_BANK_ID = 1;
+    uint private nextPiggyBankId = FIRST_PIGGY_BANK_ID;
     mapping(uint => PiggyBank) private piggyBanksById;
 
     address private tipReceiverAddress;
@@ -25,7 +26,15 @@ contract Hamm is ERC721 {
 
     event PiggyBankWithdrawed(uint piggyBankId);
 
-    modifier onlyWithdrawerOrBeneficiary(uint piggyBankId) {
+    modifier onlyOwner(uint piggyBankId) {
+        require(
+            msg.sender == ownerOf(piggyBankId),
+            "Only owner can call this function."
+        );
+        _;
+    }
+
+    modifier onlyWithdrawerOrOwner(uint piggyBankId) {
         require(
             msg.sender == ownerOf(piggyBankId) ||
                 msg.sender == piggyBanksById[piggyBankId].withdrawerAddress,
@@ -63,7 +72,7 @@ contract Hamm is ERC721 {
         string memory description,
         address tokenContractAddress
     ) public {
-        uint piggyBankId = numPiggyBanks++;
+        uint piggyBankId = nextPiggyBankId++;
         PiggyBank storage piggyBank = piggyBanksById[piggyBankId];
         piggyBank.name = name;
         piggyBank.description = description;
@@ -84,8 +93,13 @@ contract Hamm is ERC721 {
         uint numberOfPiggyBanks = balanceOf(beneficiaryAddress);
         uint[] memory ownedPiggyBankIds = new uint[](numberOfPiggyBanks);
         uint foundPiggyBank = 0;
-        for (uint piggyBankId = 0; piggyBankId < numPiggyBanks; piggyBankId++) {
+        for (
+            uint piggyBankId = FIRST_PIGGY_BANK_ID;
+            piggyBankId < nextPiggyBankId;
+            piggyBankId++
+        ) {
             if (foundPiggyBank >= numberOfPiggyBanks) break;
+            if (!_exists(piggyBankId)) continue;
             if (ownerOf(piggyBankId) == beneficiaryAddress)
                 ownedPiggyBankIds[foundPiggyBank++] = piggyBankId;
         }
@@ -118,6 +132,10 @@ contract Hamm is ERC721 {
         uint piggyBankId,
         uint amount
     ) public returns (bool) {
+        require(
+            _exists(piggyBankId),
+            "You are depositing on a deleted or not created piggy bank"
+        );
         IERC20 inputToken = IERC20(
             piggyBanksById[piggyBankId].tokenContractAddress
         );
@@ -146,10 +164,15 @@ contract Hamm is ERC721 {
         emit PiggyBankWithdrawed(piggyBankId);
     }
 
+    function deletePiggyBank(uint piggyBankId) public onlyOwner(piggyBankId) {
+        withdrawalPiggyBank(piggyBankId, 0);
+        _burn(piggyBankId);
+    }
+
     function changeWithdrawer(
         uint piggyBankId,
         address withdrawerAddress
-    ) public onlyWithdrawerOrBeneficiary(piggyBankId) {
+    ) public onlyWithdrawerOrOwner(piggyBankId) {
         piggyBanksById[piggyBankId].withdrawerAddress = withdrawerAddress;
     }
 }
