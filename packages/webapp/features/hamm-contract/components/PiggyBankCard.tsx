@@ -28,7 +28,7 @@ import { FC, PropsWithChildren, useState } from "react";
 import { Chain, Address } from "viem";
 import { useContractAddress } from "../hooks";
 import { BigNumber, BigNumberish, ethers } from "ethers";
-import { useAccount, useToken } from "wagmi";
+import { useAccount, useNetwork, useSwitchNetwork, useToken } from "wagmi";
 import { truncateAddress } from "@/utils";
 import Link from "next/link";
 import { DepositPiggyBankForm } from "./DepositPiggyBankForm";
@@ -118,6 +118,7 @@ export const PiggyBankCard: FC<{
     watch: true,
   });
   const { address: connectedAddress } = useAccount();
+  const { chain: connectedChain } = useNetwork();
   if (piggyBank === undefined) return null;
   const [
     name,
@@ -127,6 +128,30 @@ export const PiggyBankCard: FC<{
     beneficiaryAddress,
     withdrawerAddress,
   ] = piggyBank;
+
+  const PiggyActions = () => {
+    const { switchNetwork } = useSwitchNetwork({ chainId: chain.id });
+    if (connectedAddress === undefined) return null;
+    if (chain.id !== connectedChain?.id)
+      return (
+        <Button
+          variant={"outline"}
+          colorScheme={"orange"}
+          onClick={() => switchNetwork?.()}
+        >
+          Switch network
+        </Button>
+      );
+    return (
+      <>
+        <DepositPiggyBankButton chain={chain} piggyBankId={piggyBankId} />
+        {connectedAddress === withdrawerAddress && (
+          <WithdrawPiggyBankButton chain={chain} piggyBankId={piggyBankId} />
+        )}
+      </>
+    );
+  };
+
   return (
     <Skeleton isLoaded={status !== "loading"}>
       <Card maxW={"md"} variant={"elevated"} size={"sm"}>
@@ -171,12 +196,7 @@ export const PiggyBankCard: FC<{
           </Text>
         </CardBody>
         <CardFooter gap={2}>
-          {connectedAddress !== undefined && (
-            <DepositPiggyBankButton chain={chain} piggyBankId={piggyBankId} />
-          )}
-          {connectedAddress === withdrawerAddress && (
-            <WithdrawPiggyBankButton chain={chain} piggyBankId={piggyBankId} />
-          )}
+          <PiggyActions />
         </CardFooter>
       </Card>
     </Skeleton>
