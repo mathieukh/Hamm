@@ -157,7 +157,18 @@ export const PiggyBankCard: FC<{
       <Card maxW={"md"} variant={"elevated"} size={"sm"}>
         <CardHeader>
           <Heading size="md">
-            #{piggyBankId.toString()} - {name}
+            <Link
+              href={{
+                pathname: "/chain/[chainId]/piggy/[piggyBankId]",
+                query: {
+                  chainId: chain.id.toString(),
+                  piggyBankId: piggyBankId.toString(),
+                },
+              }}
+            >
+              <Button variant={"link"}>#{piggyBankId.toString()}</Button>
+            </Link>{" "}
+            - {name}
           </Heading>
         </CardHeader>
         <CardBody display={"flex"} gap={2} flexDirection={"column"}>
