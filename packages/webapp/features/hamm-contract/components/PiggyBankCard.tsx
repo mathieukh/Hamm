@@ -131,7 +131,9 @@ export const PiggyBankCard: FC<{
     <Skeleton isLoaded={status !== "loading"}>
       <Card maxW={"md"} variant={"elevated"} size={"sm"}>
         <CardHeader>
-          <Heading size="md">{name}</Heading>
+          <Heading size="md">
+            #{piggyBankId.toString()} - {name}
+          </Heading>
         </CardHeader>
         <CardBody display={"flex"} gap={2} flexDirection={"column"}>
           <Stat flex={"auto"}>
@@ -169,7 +171,9 @@ export const PiggyBankCard: FC<{
           </Text>
         </CardBody>
         <CardFooter gap={2}>
-          <DepositPiggyBankButton chain={chain} piggyBankId={piggyBankId} />
+          {connectedAddress !== undefined && (
+            <DepositPiggyBankButton chain={chain} piggyBankId={piggyBankId} />
+          )}
           {connectedAddress === withdrawerAddress && (
             <WithdrawPiggyBankButton chain={chain} piggyBankId={piggyBankId} />
           )}
