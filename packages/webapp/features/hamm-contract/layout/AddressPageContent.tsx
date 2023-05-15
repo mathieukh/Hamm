@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { PiggyBanksCounter } from "../components/PiggyBanksCounter";
 import { Address, useNetwork } from "wagmi";
-import { Divider, Heading, Stack } from "@chakra-ui/react";
+import { Divider, Heading, SimpleGrid, Stack } from "@chakra-ui/react";
 import { CreatePiggyBankButton } from "../components/CreatePiggyBankButton";
 import { PiggyBanksGridForChain } from "../components/PiggyBanksGridForChain";
 import { supportedChains } from "@/config";
@@ -20,13 +20,15 @@ export const AddressPageContent: FC<{ address: Address }> = ({ address }) => {
         )}
       </Stack>
       <Divider />
-      {supportedChains.map((chain) => (
-        <PiggyBanksGridForChain
-          key={chain.id}
-          chain={chain}
-          address={address}
-        />
-      ))}
+      <SimpleGrid gap={3} minChildWidth="sm" justifyItems={"center"}>
+        {supportedChains.map((chain) => (
+          <PiggyBanksGridForChain
+            key={chain.id}
+            chain={chain}
+            address={address}
+          />
+        ))}
+      </SimpleGrid>
     </Stack>
   );
 };
