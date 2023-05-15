@@ -1,12 +1,13 @@
-import { useAccount } from "wagmi";
+import { Address, useAccount } from "wagmi";
 import { useToast } from "@chakra-ui/react";
 
-export const useCopyAddress = () => {
+export const useCopyAddress = (addressToCopy?: Address) => {
   const { address } = useAccount();
   const toast = useToast();
+  addressToCopy = addressToCopy ?? address;
   return () => {
-    if (address !== undefined) {
-      navigator.clipboard.writeText(address).then(() => {
+    if (addressToCopy !== undefined) {
+      navigator.clipboard.writeText(addressToCopy).then(() => {
         toast({
           title: "Address copied",
           description: "The address has been copied in your clipboard",
