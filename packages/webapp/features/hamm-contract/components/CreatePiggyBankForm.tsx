@@ -76,35 +76,43 @@ export const CreatePiggyBankForm: FC<{
         description,
         tokenContractAddress,
       ],
-    }).then(({ hash }) =>
-      waitForTransaction({
-        chainId: chain?.id,
-        hash,
-      }).then((transactionReceipt) => {
-        if (transactionReceipt.status === "success") {
-          toast({ status: "success", title: "Piggy bank created !" });
-          onPiggyBankCreated();
-        } else {
-          toast({
-            status: "error",
-            title: "An error occurred",
-            description: (
-              <a
-                href={
-                  new URL(
-                    `/tx/${transactionReceipt.transactionHash}`,
-                    chain?.blockExplorers?.default.url
-                  ).href
-                }
-              >
-                {truncateAddress(transactionReceipt.transactionHash)}
-              </a>
-            ),
-          });
-        }
-        transactionReceipt.status;
-      })
-    );
+    })
+      .then(({ hash }) =>
+        waitForTransaction({
+          chainId: chain?.id,
+          hash,
+        }).then((transactionReceipt) => {
+          if (transactionReceipt.status === "success") {
+            toast({ status: "success", title: "Piggy bank created !" });
+            onPiggyBankCreated();
+          } else {
+            toast({
+              status: "error",
+              title: "An error occurred",
+              description: (
+                <a
+                  href={
+                    new URL(
+                      `/tx/${transactionReceipt.transactionHash}`,
+                      chain?.blockExplorers?.default.url
+                    ).href
+                  }
+                >
+                  {truncateAddress(transactionReceipt.transactionHash)}
+                </a>
+              ),
+            });
+          }
+          transactionReceipt.status;
+        })
+      )
+      .catch(() => {
+        toast({
+          status: "error",
+          title: "Oups",
+          description: "Piggy bank has not been created",
+        });
+      });
   };
 
   return (
