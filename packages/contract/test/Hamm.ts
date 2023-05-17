@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import hre, { ethers } from "hardhat";
+import hre from "hardhat";
 import { BigNumber } from "ethers";
 import { changeBalanceForUser as changeBalanceForUserInternal } from "./utils";
 
