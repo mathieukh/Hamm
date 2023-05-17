@@ -1,6 +1,6 @@
 import { useHammDepositPiggyBank, useHammGetPiggyBankById } from "@/lib/hamm";
 import { FC, useMemo, useState } from "react";
-import { Chain, useAccount, useToken, Address } from "wagmi";
+import { Chain, useAccount, useToken, Address, useBalance } from "wagmi";
 import {
   erc20ABI,
   writeContract,
@@ -9,7 +9,6 @@ import {
 } from "@wagmi/core";
 import { useContractAddress } from "../hooks";
 import {
-  Input,
   Spinner,
   Stack,
   Stat,
@@ -19,6 +18,7 @@ import {
   useToast,
   NumberInput,
   NumberInputField,
+  StatHelpText,
 } from "@chakra-ui/react";
 import { BigNumber, ethers } from "ethers";
 
@@ -43,6 +43,13 @@ const DepositPiggyBankFormInternal: FC<{
     chainId: chain.id,
     args: [piggyBank.id, amountAsBigNumber],
   });
+  const { data: tokenBalance } = useBalance({
+    address: connectedAddress,
+    token: token.address,
+    chainId: chain.id,
+    watch: true,
+  });
+  const isLoadingBalance = false;
   if (contractAddress === undefined || connectedAddress === undefined)
     return null;
   const onDeposit = async () => {
@@ -88,11 +95,16 @@ const DepositPiggyBankFormInternal: FC<{
   return (
     <Stack alignItems={"center"}>
       <Stat flex={"auto"}>
-        <StatLabel>Balance</StatLabel>
+        <StatLabel>My Balance</StatLabel>
         <StatNumber>
-          {ethers.utils.formatUnits(piggyBank.balance, token.decimals)}{" "}
+          {isLoadingBalance ? <Spinner /> : tokenBalance?.formatted}{" "}
           {token.symbol}
         </StatNumber>
+        <StatHelpText>
+          Piggy balance:{" "}
+          {ethers.utils.formatUnits(piggyBank.balance, token.decimals)}{" "}
+          {token.symbol}
+        </StatHelpText>
       </Stat>
       <NumberInput
         min={0}

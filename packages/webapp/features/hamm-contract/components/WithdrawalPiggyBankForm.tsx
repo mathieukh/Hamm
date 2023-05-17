@@ -38,11 +38,12 @@ const WithdrawalPiggyBankFormInternal: FC<{
       address: contractAddress,
       chainId: chain.id,
       args: [piggyBank.balance],
+      watch: true,
     });
   if (contractAddress === undefined || connectedAddress === undefined)
     return null;
-  const onWithdraw = async () => {
-    return withdraw()
+  const onWithdraw = () =>
+    withdraw()
       .then(() => {
         toast({
           status: "success",
@@ -54,10 +55,9 @@ const WithdrawalPiggyBankFormInternal: FC<{
         toast({
           status: "error",
           title: "Oups!",
-          description: `Fail to withdraw your piggy bank. Make sure your tip is not greater than your `,
+          description: `Fail to withdraw your piggy bank.`,
         });
       });
-  };
   return (
     <Stack alignItems={"center"}>
       <Stat flex={"auto"}>
