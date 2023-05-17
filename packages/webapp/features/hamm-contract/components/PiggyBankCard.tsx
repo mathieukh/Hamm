@@ -135,6 +135,55 @@ const DeletePiggyBankButton: FC<
   );
 };
 
+const PiggyActions: FC<{
+  chain: Chain;
+  piggyBankId: bigint;
+  withdrawerAddress: string;
+  beneficiaryAddress: string;
+}> = ({ chain, piggyBankId, withdrawerAddress, beneficiaryAddress }) => {
+  const { address: connectedAddress } = useAccount();
+  const { chain: connectedChain } = useNetwork();
+  const { switchNetwork } = useSwitchNetwork({ chainId: chain.id });
+  if (connectedAddress === undefined) return null;
+  if (chain.id !== connectedChain?.id)
+    return (
+      <Button
+        size={"sm"}
+        variant={"outline"}
+        colorScheme={"orange"}
+        onClick={() => switchNetwork?.()}
+      >
+        Switch network
+      </Button>
+    );
+  return (
+    <>
+      <DepositPiggyBankButton
+        size={"sm"}
+        chain={chain}
+        piggyBankId={piggyBankId}
+      />
+      {connectedAddress === withdrawerAddress && (
+        <WithdrawPiggyBankButton
+          size={"sm"}
+          chain={chain}
+          piggyBankId={piggyBankId}
+        />
+      )}
+      {connectedAddress === beneficiaryAddress && (
+        <>
+          <Spacer />
+          <DeletePiggyBankButton
+            size={"sm"}
+            chain={chain}
+            piggyBankId={piggyBankId}
+          />
+        </>
+      )}
+    </>
+  );
+};
+
 export const PiggyBankCard: FC<{
   chain: Chain;
   piggyBankId: bigint;
@@ -146,8 +195,6 @@ export const PiggyBankCard: FC<{
     args: [piggyBankId],
     watch: true,
   });
-  const { address: connectedAddress } = useAccount();
-  const { chain: connectedChain } = useNetwork();
   if (piggyBank === undefined) return null;
   const [
     name,
@@ -157,48 +204,6 @@ export const PiggyBankCard: FC<{
     beneficiaryAddress,
     withdrawerAddress,
   ] = piggyBank;
-
-  const PiggyActions = () => {
-    const { switchNetwork } = useSwitchNetwork({ chainId: chain.id });
-    if (connectedAddress === undefined) return null;
-    if (chain.id !== connectedChain?.id)
-      return (
-        <Button
-          size={"sm"}
-          variant={"outline"}
-          colorScheme={"orange"}
-          onClick={() => switchNetwork?.()}
-        >
-          Switch network
-        </Button>
-      );
-    return (
-      <>
-        <DepositPiggyBankButton
-          size={"sm"}
-          chain={chain}
-          piggyBankId={piggyBankId}
-        />
-        {connectedAddress === withdrawerAddress && (
-          <WithdrawPiggyBankButton
-            size={"sm"}
-            chain={chain}
-            piggyBankId={piggyBankId}
-          />
-        )}
-        {connectedAddress === beneficiaryAddress && (
-          <>
-            <Spacer />
-            <DeletePiggyBankButton
-              size={"sm"}
-              chain={chain}
-              piggyBankId={piggyBankId}
-            />
-          </>
-        )}
-      </>
-    );
-  };
 
   const TokenLink = () => {
     const { blockExplorers } = chain;
@@ -273,7 +278,12 @@ export const PiggyBankCard: FC<{
           </Text>
         </CardBody>
         <CardFooter gap={2}>
-          <PiggyActions />
+          <PiggyActions
+            chain={chain}
+            piggyBankId={piggyBankId}
+            withdrawerAddress={withdrawerAddress}
+            beneficiaryAddress={beneficiaryAddress}
+          />
         </CardFooter>
       </Card>
     </Skeleton>
