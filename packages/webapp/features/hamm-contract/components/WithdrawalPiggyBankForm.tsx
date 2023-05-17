@@ -1,13 +1,13 @@
 import {
+  useHammCalculateTip,
   useHammDepositPiggyBank,
   useHammGetPiggyBankById,
   useHammWithdrawalPiggyBank,
 } from "@/lib/hamm";
-import { FC, useMemo, useState } from "react";
+import { FC } from "react";
 import { Chain, useAccount, useToken, Address } from "wagmi";
 import { useContractAddress } from "../hooks";
 import {
-  Input,
   Spinner,
   Stack,
   Stat,
@@ -15,12 +15,8 @@ import {
   StatNumber,
   Button,
   useToast,
-  NumberInput,
-  NumberInputField,
-  FormControl,
-  FormLabel,
-  FormHelperText,
-  Text,
+  StatGroup,
+  StatHelpText,
 } from "@chakra-ui/react";
 import { BigNumber, ethers } from "ethers";
 
@@ -32,19 +28,17 @@ const WithdrawalPiggyBankFormInternal: FC<{
   const toast = useToast();
   const { address: connectedAddress } = useAccount();
   const contractAddress = useContractAddress(chain.id);
-  const [tip, setTip] = useState("0");
-  const tipAsBigNumber = useMemo(() => {
-    try {
-      return ethers.utils.parseUnits(tip, token.decimals).toBigInt();
-    } catch {
-      return BigNumber.from(0).toBigInt();
-    }
-  }, [tip, token.decimals]);
   const { writeAsync: withdraw } = useHammWithdrawalPiggyBank({
     address: contractAddress,
     chainId: chain.id,
-    args: [piggyBank.id, tipAsBigNumber],
+    args: [piggyBank.id],
   });
+  const { data: tip = BigNumber.from(0).toBigInt(), isLoading: isLoadingTip } =
+    useHammCalculateTip({
+      address: contractAddress,
+      chainId: chain.id,
+      args: [piggyBank.balance],
+    });
   if (contractAddress === undefined || connectedAddress === undefined)
     return null;
   const onWithdraw = async () => {
@@ -67,45 +61,21 @@ const WithdrawalPiggyBankFormInternal: FC<{
   return (
     <Stack alignItems={"center"}>
       <Stat flex={"auto"}>
-        <StatLabel>Balance</StatLabel>
+        <StatLabel>Piggy balance</StatLabel>
         <StatNumber>
           {ethers.utils.formatUnits(piggyBank.balance, token.decimals)}{" "}
           {token.symbol}
         </StatNumber>
+        <StatHelpText>
+          Tip:{" "}
+          {isLoadingTip ? (
+            <Spinner size={"xs"} />
+          ) : (
+            ethers.utils.formatUnits(tip, token.decimals)
+          )}{" "}
+          {token.symbol}
+        </StatHelpText>
       </Stat>
-      <FormControl as="fieldset">
-        <FormLabel as="legend">Support the development:</FormLabel>
-        <NumberInput
-          size={"xs"}
-          min={0}
-          value={tip}
-          onChange={(newTip) => {
-            setTip(newTip);
-          }}
-        >
-          <NumberInputField />
-        </NumberInput>
-        <FormHelperText>
-          <Text>
-            <Text as="span" fontWeight={"bold"}>
-              Tip:
-            </Text>{" "}
-            {ethers.utils.formatUnits(tipAsBigNumber, token.decimals)}{" "}
-            {token.symbol} -{" "}
-            <Text as="span" fontWeight={"bold"}>
-              Withdrawed:
-            </Text>{" "}
-            {ethers.utils.formatUnits(
-              piggyBank.balance - tipAsBigNumber,
-              token.decimals
-            )}{" "}
-            {token.symbol}
-          </Text>
-          <Text>
-            You can leave an amount of your piggy bank to the DApp creator.
-          </Text>
-        </FormHelperText>
-      </FormControl>
       <Button variant={"outline"} colorScheme="red" onClick={onWithdraw}>
         Withdraw
       </Button>
