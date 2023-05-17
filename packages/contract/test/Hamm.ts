@@ -240,9 +240,10 @@ describe("PiggyBank", () => {
 
       const tx = await hamm
         .connect(userB)
-        .withdrawalPiggyBank(piggyBankId, 0)
+        .withdrawalPiggyBank(piggyBankId)
         .then((tx) => tx.wait());
 
+      // User A receives the tip too as it is the tipReceiver by default
       const balanceAfter = await fakeToken.balanceOf(userA.address);
       expect(balanceAfter).to.be.eql(BigNumber.from(100_000));
       expect(tx).to.emit(hamm, "PiggyBankWithdrawed");
@@ -283,7 +284,7 @@ describe("PiggyBank", () => {
       expect(balanceBefore).to.be.eql(BigNumber.from(50_000));
 
       await expect(
-        hamm.connect(userA).withdrawalPiggyBank(piggyBankId, 0)
+        hamm.connect(userA).withdrawalPiggyBank(piggyBankId)
       ).to.be.revertedWith("Only withdrawer can call this function.");
     });
 
@@ -315,7 +316,7 @@ describe("PiggyBank", () => {
         .then((tx) => tx.wait());
 
       await expect(
-        hamm.connect(userB).withdrawalPiggyBank(piggyBankId, 0)
+        hamm.connect(userB).withdrawalPiggyBank(piggyBankId)
       ).to.be.revertedWith("Only withdrawer can call this function.");
     });
 
@@ -537,7 +538,7 @@ describe("PiggyBank", () => {
   });
 
   describe("Tip", () => {
-    it("Given a Hamm contract with a tip receiver address, When a user withdraw its piggy bank and tip, Then the tip receiver address will receive the tip", async () => {
+    it("Given a Hamm contract with a tip receiver address, When a user withdraw its piggy bank, Then the tip receiver address will receive 0.5% of the amount", async () => {
       const [userA] = await hre.ethers.getSigners();
       const {
         hamm,
@@ -571,17 +572,17 @@ describe("PiggyBank", () => {
 
       await hamm
         .connect(userB)
-        .withdrawalPiggyBank(piggyBankId, 1_000)
+        .withdrawalPiggyBank(piggyBankId)
         .then((tx) => tx.wait());
 
       const tipReceiverBalanceAfter = await fakeToken.balanceOf(userA.address);
-      expect(tipReceiverBalanceAfter).to.be.eql(BigNumber.from(1_000));
+      expect(tipReceiverBalanceAfter).to.be.eql(BigNumber.from(500));
 
       const withdrawerBalanceAfter = await fakeToken.balanceOf(userB.address);
-      expect(withdrawerBalanceAfter).to.be.eql(BigNumber.from(99_000));
+      expect(withdrawerBalanceAfter).to.be.eql(BigNumber.from(99_500));
     });
 
-    it("Given a Hamm contract with a tip receiver address, When a user withdraw its piggy bank and tip above the amount of the piggy bank, Then it must reverts the transaction", async () => {
+    it("Given a piggy bank without enough fund to tip 0.5%, When a user withdraw its piggy bank, Then all the funds go to the user directly", async () => {
       const [userA] = await hre.ethers.getSigners();
       const {
         hamm,
@@ -607,12 +608,22 @@ describe("PiggyBank", () => {
 
       await hamm
         .connect(userB)
-        .depositPiggyBank(piggyBankId, BigNumber.from(100_000))
+        .depositPiggyBank(piggyBankId, BigNumber.from(100))
         .then((tx) => tx.wait());
 
-      await expect(
-        hamm.connect(userB).withdrawalPiggyBank(piggyBankId, 150_000)
-      ).to.revertedWith("The tip is not correct");
+      const balanceBefore = await fakeToken.balanceOf(userA.address);
+      expect(balanceBefore).to.be.eql(BigNumber.from(0));
+
+      await hamm
+        .connect(userB)
+        .withdrawalPiggyBank(piggyBankId)
+        .then((tx) => tx.wait());
+
+      const tipReceiverBalanceAfter = await fakeToken.balanceOf(userA.address);
+      expect(tipReceiverBalanceAfter).to.be.eql(BigNumber.from(0));
+
+      const withdrawerBalanceAfter = await fakeToken.balanceOf(userB.address);
+      expect(withdrawerBalanceAfter).to.be.eql(BigNumber.from(100_000));
     });
   });
 

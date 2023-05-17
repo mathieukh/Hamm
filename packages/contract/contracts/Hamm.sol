@@ -16,6 +16,15 @@ contract Hamm is ERC721 {
     uint private nextPiggyBankId = FIRST_PIGGY_BANK_ID;
     mapping(uint => PiggyBank) private piggyBanksById;
 
+    // 0.5%
+    uint constant TIP_BPS = 50;
+
+    function calculateTip(uint256 amount) public pure returns (uint256) {
+        uint tipAmountBps = amount * TIP_BPS;
+        if (tipAmountBps < 10_000) return 0;
+        return tipAmountBps / 10_000;
+    }
+
     address private tipReceiverAddress;
 
     constructor(address _tipReceiverAddress) ERC721("PiggyBank", "PBK") {
@@ -144,11 +153,10 @@ contract Hamm is ERC721 {
     }
 
     function withdrawalPiggyBank(
-        uint piggyBankId,
-        uint tip
+        uint piggyBankId
     ) public onlyWithdrawer(piggyBankId) returns (bool transfer) {
         uint amount = piggyBanksById[piggyBankId].balance;
-        require(tip <= amount, "The tip is not correct");
+        uint tip = calculateTip(amount);
         uint amountToWithdrawer = amount - tip;
         piggyBanksById[piggyBankId].balance = 0;
         IERC20 inputToken = IERC20(
@@ -158,14 +166,12 @@ contract Hamm is ERC721 {
             ownerOf(piggyBankId),
             amountToWithdrawer
         );
-        if (tip > 0) {
-            inputToken.transfer(tipReceiverAddress, tip);
-        }
+        inputToken.transfer(tipReceiverAddress, tip);
         emit PiggyBankWithdrawed(piggyBankId);
     }
 
     function deletePiggyBank(uint piggyBankId) public onlyOwner(piggyBankId) {
-        withdrawalPiggyBank(piggyBankId, 0);
+        withdrawalPiggyBank(piggyBankId);
         _burn(piggyBankId);
     }
 
