@@ -17,6 +17,7 @@ import {
   StatHelpText,
 } from "@chakra-ui/react";
 import { BigNumber, ethers } from "ethers";
+import { waitForTransaction } from "@wagmi/core";
 
 const WithdrawalPiggyBankFormInternal: FC<{
   chain: Chain;
@@ -42,13 +43,13 @@ const WithdrawalPiggyBankFormInternal: FC<{
     return null;
   const onWithdraw = () =>
     withdraw()
-      .then(() => {
+      .then((tx) => waitForTransaction({chainId: chain.id, hash: tx.hash}).then(() => {
         toast({
           status: "success",
           title: "Great!",
           description: `You have withdrawed your piggy bank`,
         });
-      })
+      }))
       .catch(() => {
         toast({
           status: "error",

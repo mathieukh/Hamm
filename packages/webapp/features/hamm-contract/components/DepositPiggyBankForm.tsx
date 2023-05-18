@@ -38,7 +38,7 @@ const DepositPiggyBankFormInternal: FC<{
       return BigNumber.from(0).toBigInt();
     }
   }, [amount, token.decimals]);
-  const { writeAsync: deposit } = useHammDepositPiggyBank({
+  const { writeAsync: deposit, isLoading } = useHammDepositPiggyBank({
     address: contractAddress,
     chainId: chain.id,
     args: [piggyBank.id, amountAsBigNumber],
@@ -81,16 +81,31 @@ const DepositPiggyBankFormInternal: FC<{
         return;
       }
     }
-    return deposit().then(() => {
-      toast({
-        status: "success",
-        title: "Great!",
-        description: `You have deposited ${ethers.utils.formatUnits(
-          amountAsBigNumber,
-          token.decimals
-        )} ${token.symbol}`,
+    return deposit()
+      .then((tx) =>
+        waitForTransaction({ chainId: chain.id, hash: tx.hash }).then(
+          (txResult) => {
+            if (txResult.status === "reverted") {
+              throw new Error("Transaction reverted.");
+            }
+            toast({
+              status: "success",
+              title: "Great!",
+              description: `You have deposited ${ethers.utils.formatUnits(
+                amountAsBigNumber,
+                token.decimals
+              )} ${token.symbol}`,
+            });
+          }
+        )
+      )
+      .catch(() => {
+        toast({
+          status: "error",
+          title: "Oups!",
+          description: "Can not deposit in the piggy bank",
+        });
       });
-    });
   };
   return (
     <Stack alignItems={"center"}>
@@ -115,7 +130,9 @@ const DepositPiggyBankFormInternal: FC<{
       >
         <NumberInputField />
       </NumberInput>
-      <Button onClick={onDeposit}>Deposit</Button>
+      <Button onClick={onDeposit} isLoading={isLoading}>
+        Deposit
+      </Button>
     </Stack>
   );
 };
