@@ -2,7 +2,7 @@
 pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-contract HammRenderer {
+abstract contract HammRenderer {
     function renderSvg() public pure returns (string memory) {
         return
             string.concat(

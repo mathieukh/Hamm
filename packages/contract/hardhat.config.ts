@@ -2,6 +2,11 @@ import { HardhatUserConfig, task } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import { changeBalanceForUser } from "./test/utils";
 
+// Enables JSON serialization of BigInt type
+(BigInt.prototype as any).toJSON = function () {
+  return this.toString();
+};
+
 task("deploy", "Deploy the Hamm contract")
   .addOptionalParam("tipReceiver", "The account's address to receive the tip")
   .setAction(async ({ tipReceiver }, hre) => {
