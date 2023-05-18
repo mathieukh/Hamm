@@ -3,14 +3,7 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract HammRenderer {
-    function renderSvg(uint256 _tokenId) public pure returns (string memory) {
-        string memory formattedTokenId = Strings.toString(_tokenId);
-        uint stringLength = bytes(formattedTokenId).length;
-        uint8 fontSize = 55;
-        if (stringLength > 22) fontSize = 40;
-        if (stringLength > 31) fontSize = 30;
-        if (stringLength > 43) fontSize = 20;
-        if (stringLength > 65) fontSize = 17;
+    function renderSvg() public pure returns (string memory) {
         return
             string.concat(
                 '<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000" style="background:#fff">',
@@ -21,12 +14,6 @@ contract HammRenderer {
                 '<path d="M2945.5,1578.4c-192.4-36.6-346.4-217.4-346.4-406c0-232.8,242.5-448.4,465.7-413.7c163.6,26.9,296.3,132.8,342.5,273.3c38.5,115.5,15.4,282.9-50,377.2C3268.8,1536.1,3093.7,1607.3,2945.5,1578.4z"/>',
                 "</g>",
                 "</g>",
-                '<text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-family="Verdana" font-size="',
-                Strings.toString(fontSize),
-                '">',
-                "#",
-                formattedTokenId,
-                "</text>",
                 "</svg>"
             );
     }

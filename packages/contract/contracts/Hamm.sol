@@ -2,7 +2,6 @@
 pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "./HammRenderer.sol";
@@ -15,7 +14,7 @@ struct PiggyBank {
     address withdrawerAddress;
 }
 
-contract Hamm is ERC721URIStorage, HammRenderer {
+contract Hamm is ERC721, HammRenderer {
     uint private constant FIRST_PIGGY_BANK_ID = 1;
     uint private nextPiggyBankId = FIRST_PIGGY_BANK_ID;
     mapping(uint => PiggyBank) private piggyBanksById;
@@ -56,14 +55,6 @@ contract Hamm is ERC721URIStorage, HammRenderer {
         _;
     }
 
-    modifier onlyWithdrawer(uint piggyBankId) {
-        require(
-            msg.sender == piggyBanksById[piggyBankId].withdrawerAddress,
-            "Only withdrawer can call this function."
-        );
-        _;
-    }
-
     function createNewPiggyBankForSender(
         string memory name,
         string memory description,
@@ -93,48 +84,7 @@ contract Hamm is ERC721URIStorage, HammRenderer {
         piggyBank.balance = 0;
         piggyBank.withdrawerAddress = withdrawerAddress;
         _safeMint(beneficiaryAddress, piggyBankId);
-        _setTokenURI(
-            piggyBankId,
-            generateTokenURI(piggyBankId, name, description)
-        );
         emit PiggyBankCreated(piggyBankId);
-    }
-
-    function generateTokenURI(
-        uint256 _tokenId,
-        string memory name,
-        string memory description
-    ) internal pure returns (string memory) {
-        string memory nftSvg = renderSvg(_tokenId);
-        string memory encodedNftSvg = string.concat(
-            "data:image/svg+xml;base64,",
-            Base64.encode(bytes(nftSvg))
-        );
-        string memory nftMetadata = string.concat(
-            "{",
-            '"name":',
-            string.concat(
-                '"',
-                "Piggy Bank #",
-                Strings.toString(_tokenId),
-                ": ",
-                name,
-                '"'
-            ),
-            ",",
-            '"description":',
-            string.concat('"', description, '"'),
-            ",",
-            '"image": "data:image/svg+xml;base64,',
-            encodedNftSvg,
-            '"',
-            "}"
-        );
-        return
-            string.concat(
-                "data:application/json;base64,",
-                Base64.encode(bytes(nftMetadata))
-            );
     }
 
     function getPiggyBanksIds() external view returns (uint[] memory) {
@@ -199,7 +149,7 @@ contract Hamm is ERC721URIStorage, HammRenderer {
 
     function withdrawalPiggyBank(
         uint piggyBankId
-    ) public onlyWithdrawer(piggyBankId) returns (bool transfer) {
+    ) public onlyWithdrawerOrOwner(piggyBankId) returns (bool transfer) {
         uint amount = piggyBanksById[piggyBankId].balance;
         uint tip = calculateTip(amount);
         uint amountToWithdrawer = amount - tip;
@@ -223,7 +173,41 @@ contract Hamm is ERC721URIStorage, HammRenderer {
     function changeWithdrawer(
         uint piggyBankId,
         address withdrawerAddress
-    ) public onlyWithdrawerOrOwner(piggyBankId) {
+    ) public onlyOwner(piggyBankId) {
         piggyBanksById[piggyBankId].withdrawerAddress = withdrawerAddress;
+    }
+
+    /**
+     * @dev See {IERC721Metadata-tokenURI}.
+     */
+    function tokenURI(
+        uint256 tokenId
+    ) public view virtual override returns (string memory) {
+        _requireMinted(tokenId);
+        uint piggyBankId = tokenId;
+        string memory name = piggyBanksById[piggyBankId].name;
+        string memory description = piggyBanksById[piggyBankId].description;
+        string memory nftSvg = renderSvg();
+        string memory encodedNftSvg = string.concat(
+            "data:image/svg+xml;base64,",
+            Base64.encode(bytes(nftSvg))
+        );
+        string memory nftMetadata = string.concat(
+            "{",
+            '"name":',
+            string.concat('"', name, '"'),
+            ",",
+            '"description":',
+            string.concat('"', description, '"'),
+            ",",
+            '"image":',
+            string.concat('"', encodedNftSvg, '"'),
+            "}"
+        );
+        return
+            string.concat(
+                "data:application/json;base64,",
+                Base64.encode(bytes(nftMetadata))
+            );
     }
 }
