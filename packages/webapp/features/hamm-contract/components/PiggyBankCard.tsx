@@ -163,7 +163,8 @@ const PiggyActions: FC<{
         chain={chain}
         piggyBankId={piggyBankId}
       />
-      {connectedAddress === withdrawerAddress && (
+      {(connectedAddress === withdrawerAddress ||
+        connectedAddress === beneficiaryAddress) && (
         <WithdrawPiggyBankButton
           size={"sm"}
           chain={chain}

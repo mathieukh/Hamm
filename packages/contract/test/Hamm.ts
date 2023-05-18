@@ -249,7 +249,7 @@ describe("PiggyBank", () => {
       expect(tx).to.emit(hamm, "PiggyBankWithdrawed");
     });
 
-    it("Given a piggy bank with funds, When the beneficiary which is not the withdrawer want to withdraw it, Then it must revert as only the withdrawer can withdraw", async () => {
+    it("Given a piggy bank with funds, When the beneficiary want to withdraw it, Then it must withdraw the fund to the beneficiary", async () => {
       const {
         hamm,
         owner: userA,
@@ -283,12 +283,18 @@ describe("PiggyBank", () => {
       const balanceBefore = await fakeToken.balanceOf(userA.address);
       expect(balanceBefore).to.be.eql(BigNumber.from(50_000));
 
-      await expect(
-        hamm.connect(userA).withdrawalPiggyBank(piggyBankId)
-      ).to.be.revertedWith("Only withdrawer can call this function.");
+      const tx = await hamm
+        .connect(userA)
+        .withdrawalPiggyBank(piggyBankId)
+        .then((tx) => tx.wait());
+
+      // User A receives the tip too as it is the tipReceiver by default
+      const balanceAfter = await fakeToken.balanceOf(userA.address);
+      expect(balanceAfter).to.be.eql(BigNumber.from(100_000));
+      expect(tx).to.emit(hamm, "PiggyBankWithdrawed");
     });
 
-    it("Given a piggy bank, When a user different withdrawer want to withdraw, Then it must revert as only the withdrawer can withdraw", async () => {
+    it("Given a piggy bank, When a user different than the withdrawer or the beneficiary want to withdraw, Then it must revert as only the withdrawer or beneficiary can withdraw", async () => {
       const {
         hamm,
         owner: userA,
