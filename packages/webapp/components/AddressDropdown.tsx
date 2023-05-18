@@ -1,10 +1,6 @@
 import { FC, PropsWithChildren } from "react";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
-import {
-  WalletIcon,
-  ArrowLeftOnRectangleIcon,
-  ClipboardIcon,
-} from "@heroicons/react/24/outline";
+import {HiChevronDown, HiOutlineClipboard } from "react-icons/hi"
+import { HiOutlineWallet, HiOutlineArrowLeftOnRectangle } from "react-icons/hi2"
 import { useCopyAddress, useTruncatedAddress } from "@/hooks";
 import { useDisconnect } from "wagmi";
 import Link from "next/link";
@@ -37,26 +33,26 @@ export const AddressDropdown: FC = () => {
       <MenuButton
         as={Button}
         variant={"outline"}
-        rightIcon={<ChevronDownIcon width={20} height={20} />}
+        rightIcon={<HiChevronDown width={20} height={20} />}
       >
         {truncatedAddress}
       </MenuButton>
       <MenuList>
         <MenuItem>
           <Link href={`/address/${address}`}>
-            <ItemWithIcon leftIcon={<WalletIcon width={20} height={20} />}>
+            <ItemWithIcon leftIcon={<HiOutlineWallet width={20} height={20} />}>
               My Piggies
             </ItemWithIcon>
           </Link>
         </MenuItem>
         <MenuItem onClick={() => copyAddress()}>
-          <ItemWithIcon leftIcon={<ClipboardIcon width={20} height={20} />}>
+          <ItemWithIcon leftIcon={<HiOutlineClipboard width={20} height={20} />}>
             Copy address
           </ItemWithIcon>
         </MenuItem>
         <MenuItem onClick={() => disconnect()}>
           <ItemWithIcon
-            leftIcon={<ArrowLeftOnRectangleIcon width={20} height={20} />}
+            leftIcon={<HiOutlineArrowLeftOnRectangle width={20} height={20} />}
           >
             Disconnect
           </ItemWithIcon>

@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { PlusCircleIcon } from "@heroicons/react/20/solid";
+import {HiPlusCircle} from "react-icons/hi"
 import {
   Button,
   ButtonProps,
@@ -20,7 +20,7 @@ export const CreatePiggyBankButton: FC<ButtonProps> = (props) => {
       <Button
         {...props}
         onClick={onOpen}
-        leftIcon={<PlusCircleIcon width={20} height={20} />}
+        leftIcon={<HiPlusCircle width={20} height={20} />}
       >
         {props.children ?? "Create"}
       </Button>

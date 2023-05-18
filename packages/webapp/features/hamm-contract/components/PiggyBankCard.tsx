@@ -31,11 +31,8 @@ import { truncateAddress } from "@/utils";
 import Link from "next/link";
 import { DepositPiggyBankForm } from "./DepositPiggyBankForm";
 import { WithdrawalPiggyBankForm } from "./WithdrawalPiggyBankForm";
-import {
-  TrashIcon,
-  BanknotesIcon,
-  ArrowDownCircleIcon,
-} from "@heroicons/react/24/outline";
+import {HiOutlineTrash} from "react-icons/hi"
+import {HiOutlineBanknotes, HiOutlineArrowDownCircle} from "react-icons/hi2"
 
 const Balance: FC<{
   balance: BigNumberish;
@@ -64,7 +61,7 @@ const DepositPiggyBankButton: FC<
     <>
       <Button
         variant={"outline"}
-        leftIcon={<ArrowDownCircleIcon width={15} height={15} />}
+        leftIcon={<HiOutlineArrowDownCircle width={15} height={15} />}
         {...props}
         onClick={onOpen}
       >
@@ -93,7 +90,7 @@ const WithdrawPiggyBankButton: FC<
       <Button
         variant={"outline"}
         colorScheme="green"
-        leftIcon={<BanknotesIcon width={15} height={15} />}
+        leftIcon={<HiOutlineBanknotes width={15} height={15} />}
         {...props}
         onClick={onOpen}
       >
@@ -126,7 +123,7 @@ const DeletePiggyBankButton: FC<
       variant={"outline"}
       colorScheme="red"
       isLoading={isLoading}
-      leftIcon={<TrashIcon height={15} width={15} />}
+      leftIcon={<HiOutlineTrash height={15} width={15} />}
       {...props}
       onClick={() => deletePiggyBank()}
     >

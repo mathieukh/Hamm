@@ -5,7 +5,7 @@ import {
   IconButton,
   MenuItem,
 } from "@chakra-ui/react";
-import { Cog6ToothIcon } from "@heroicons/react/24/outline";
+import {HiOutlineCog6Tooth} from "react-icons/hi2"
 import { ToggleColorMode } from "./ToggleColorMode";
 import { ChooseChainDropdown } from "./ChooseChainDropdown";
 
@@ -15,7 +15,7 @@ export const Settings = () => {
       <MenuButton
         as={IconButton}
         variant={"outline"}
-        icon={<Cog6ToothIcon width={15} height={15} />}
+        icon={<HiOutlineCog6Tooth width={15} height={15} />}
       />
       <MenuList>
         <ChooseChainDropdown />

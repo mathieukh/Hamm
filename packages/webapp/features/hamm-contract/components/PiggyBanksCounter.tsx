@@ -12,7 +12,7 @@ import {
   IconButton,
 } from "@chakra-ui/react";
 import { supportedChains } from "@/config";
-import { ArrowPathIcon } from "@heroicons/react/24/outline";
+import {HiOutlineArrowPath} from "react-icons/hi2"
 
 const PiggyBanksCounterForChain: FC<{ chain: Chain; address: Address }> = ({
   chain,
@@ -37,7 +37,7 @@ const PiggyBanksCounterForChain: FC<{ chain: Chain; address: Address }> = ({
           variant="ghost"
           aria-label="error-on-fetch-piggy-ids"
           onClick={() => refetch()}
-          icon={<ArrowPathIcon width={25} height={25} />}
+          icon={<HiOutlineArrowPath width={25} height={25} />}
         />
       );
     if (status === "success") return <>{piggyBanksIds?.length}</>;

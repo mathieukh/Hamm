@@ -1,5 +1,4 @@
 import { Switch, useColorMode, FormControl, FormLabel } from "@chakra-ui/react";
-import { SunIcon, MoonIcon } from "@heroicons/react/24/outline";
 
 export const ToggleColorMode = () => {
   const { colorMode, toggleColorMode } = useColorMode();

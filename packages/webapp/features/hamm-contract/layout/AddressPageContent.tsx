@@ -12,7 +12,7 @@ import {
 import { CreatePiggyBankButton } from "../components/CreatePiggyBankButton";
 import { PiggyBanksGridForChain } from "../components/PiggyBanksGridForChain";
 import { supportedChains } from "@/config";
-import { ClipboardIcon } from "@heroicons/react/20/solid";
+import {HiOutlineClipboard} from "react-icons/hi"
 import { useCopyAddress } from "@/hooks";
 
 const AddressFromPage: FC<{ address: Address }> = ({ address }) => {
@@ -24,7 +24,7 @@ const AddressFromPage: FC<{ address: Address }> = ({ address }) => {
         size={"xs"}
         variant={"ghost"}
         aria-label="copy-address"
-        icon={<ClipboardIcon height={15} width={15} />}
+        icon={<HiOutlineClipboard height={15} width={15} />}
         onClick={copyAddress}
       />
     </Flex>
