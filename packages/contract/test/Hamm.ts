@@ -6,13 +6,13 @@ import { changeBalanceForUser as changeBalanceForUserInternal } from "./utils";
 export const FIRST_PIGGY_BANK = BigNumber.from(1);
 
 const deployHammContract = async ({
-  tipReceiverAddress,
-}: { tipReceiverAddress?: string } = {}) => {
+  feeReceiverAddress,
+}: { feeReceiverAddress?: string } = {}) => {
   // Contracts are deployed using the first signer/account by default
   const [owner, otherAccount] = await hre.ethers.getSigners();
   const ERC20TokenFactory = await hre.ethers.getContractFactory("ERC20");
   const HammFactory = await hre.ethers.getContractFactory("Hamm");
-  const hamm = await HammFactory.deploy(tipReceiverAddress ?? owner.address);
+  const hamm = await HammFactory.deploy(feeReceiverAddress ?? owner.address);
   const fakeToken = await ERC20TokenFactory.deploy("FakeToken", "FAKE");
   const changeBalanceForUser = (
     userAddress: string,
@@ -243,7 +243,7 @@ describe("PiggyBank", () => {
         .withdrawalPiggyBank(piggyBankId)
         .then((tx) => tx.wait());
 
-      // User A receives the tip too as it is the tipReceiver by default
+      // User A receives the fee too as it is the feeReceiver by default
       const balanceAfter = await fakeToken.balanceOf(userA.address);
       expect(balanceAfter).to.be.eql(BigNumber.from(100_000));
       expect(tx).to.emit(hamm, "PiggyBankWithdrawed");
@@ -288,7 +288,7 @@ describe("PiggyBank", () => {
         .withdrawalPiggyBank(piggyBankId)
         .then((tx) => tx.wait());
 
-      // User A receives the tip too as it is the tipReceiver by default
+      // User A receives the fee too as it is the feeReceiver by default
       const balanceAfter = await fakeToken.balanceOf(userA.address);
       expect(balanceAfter).to.be.eql(BigNumber.from(100_000));
       expect(tx).to.emit(hamm, "PiggyBankWithdrawed");
@@ -542,15 +542,15 @@ describe("PiggyBank", () => {
     });
   });
 
-  describe("Tip", () => {
-    it("Given a Hamm contract with a tip receiver address, When a user withdraw its piggy bank, Then the tip receiver address will receive 0.5% of the amount", async () => {
+  describe("Fee", () => {
+    it("Given a Hamm contract with a fee receiver address, When a user withdraw its piggy bank, Then the fee receiver address will receive 0.5% of the amount", async () => {
       const [userA] = await hre.ethers.getSigners();
       const {
         hamm,
         otherAccount: userB,
         fakeToken,
         changeBalanceForUser,
-      } = await deployHammContract({ tipReceiverAddress: userA.address });
+      } = await deployHammContract({ feeReceiverAddress: userA.address });
       await hamm
         .connect(userB)
         .createNewPiggyBankForSender(
@@ -580,21 +580,21 @@ describe("PiggyBank", () => {
         .withdrawalPiggyBank(piggyBankId)
         .then((tx) => tx.wait());
 
-      const tipReceiverBalanceAfter = await fakeToken.balanceOf(userA.address);
-      expect(tipReceiverBalanceAfter).to.be.eql(BigNumber.from(500));
+      const feeReceiverBalanceAfter = await fakeToken.balanceOf(userA.address);
+      expect(feeReceiverBalanceAfter).to.be.eql(BigNumber.from(500));
 
       const withdrawerBalanceAfter = await fakeToken.balanceOf(userB.address);
       expect(withdrawerBalanceAfter).to.be.eql(BigNumber.from(99_500));
     });
 
-    it("Given a piggy bank without enough fund to tip 0.5%, When a user withdraw its piggy bank, Then all the funds go to the user directly", async () => {
+    it("Given a piggy bank without enough fund to fee 0.5%, When a user withdraw its piggy bank, Then all the funds go to the user directly", async () => {
       const [userA] = await hre.ethers.getSigners();
       const {
         hamm,
         otherAccount: userB,
         fakeToken,
         changeBalanceForUser,
-      } = await deployHammContract({ tipReceiverAddress: userA.address });
+      } = await deployHammContract({ feeReceiverAddress: userA.address });
       await hamm
         .connect(userB)
         .createNewPiggyBankForSender(
@@ -624,8 +624,8 @@ describe("PiggyBank", () => {
         .withdrawalPiggyBank(piggyBankId)
         .then((tx) => tx.wait());
 
-      const tipReceiverBalanceAfter = await fakeToken.balanceOf(userA.address);
-      expect(tipReceiverBalanceAfter).to.be.eql(BigNumber.from(0));
+      const feeReceiverBalanceAfter = await fakeToken.balanceOf(userA.address);
+      expect(feeReceiverBalanceAfter).to.be.eql(BigNumber.from(0));
 
       const withdrawerBalanceAfter = await fakeToken.balanceOf(userB.address);
       expect(withdrawerBalanceAfter).to.be.eql(BigNumber.from(100_000));
@@ -639,7 +639,7 @@ describe("PiggyBank", () => {
         hamm,
         otherAccount: userB,
         fakeToken,
-      } = await deployHammContract({ tipReceiverAddress: userA.address });
+      } = await deployHammContract({ feeReceiverAddress: userA.address });
       await hamm
         .connect(userB)
         .createNewPiggyBankForSender(

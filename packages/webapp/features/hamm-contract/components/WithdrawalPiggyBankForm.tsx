@@ -1,6 +1,5 @@
 import {
-  useHammCalculateTip,
-  useHammDepositPiggyBank,
+  useHammCalculateFee,
   useHammGetPiggyBankById,
   useHammWithdrawalPiggyBank,
 } from "@/lib/hamm";
@@ -15,7 +14,6 @@ import {
   StatNumber,
   Button,
   useToast,
-  StatGroup,
   StatHelpText,
 } from "@chakra-ui/react";
 import { BigNumber, ethers } from "ethers";
@@ -33,8 +31,8 @@ const WithdrawalPiggyBankFormInternal: FC<{
     chainId: chain.id,
     args: [piggyBank.id],
   });
-  const { data: tip = BigNumber.from(0).toBigInt(), isLoading: isLoadingTip } =
-    useHammCalculateTip({
+  const { data: fee = BigNumber.from(0).toBigInt(), isLoading: isLoadingFee } =
+    useHammCalculateFee({
       address: contractAddress,
       chainId: chain.id,
       args: [piggyBank.balance],
@@ -67,11 +65,11 @@ const WithdrawalPiggyBankFormInternal: FC<{
           {token.symbol}
         </StatNumber>
         <StatHelpText>
-          Tip:{" "}
-          {isLoadingTip ? (
+          Fee:{" "}
+          {isLoadingFee ? (
             <Spinner size={"xs"} />
           ) : (
-            ethers.utils.formatUnits(tip, token.decimals)
+            ethers.utils.formatUnits(fee, token.decimals)
           )}{" "}
           {token.symbol}
         </StatHelpText>
