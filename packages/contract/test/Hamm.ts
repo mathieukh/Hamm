@@ -323,7 +323,7 @@ describe("PiggyBank", () => {
 
       await expect(
         hamm.connect(userB).withdrawalPiggyBank(piggyBankId)
-      ).to.be.revertedWith("Only withdrawer can call this function.");
+      ).to.be.revertedWith("Only withdrawer or owner can call this function.");
     });
 
     it("Given a user, When he wants to deposit on a non-existing piggy bank, Then it must revert", async () => {
@@ -483,7 +483,7 @@ describe("PiggyBank", () => {
       expect(withdrawerAddressAfter).to.eql(userA.address);
     });
 
-    it("Given a withdrawer in a piggy bank, When the withdrawer want to change the withdrawer of the piggy, Then the withdrawer can be change", async () => {
+    it("Given a withdrawer in a piggy bank, When the withdrawer want to change the withdrawer of the piggy, Then it must revert as only the beneficiary can change the withdrawer of a piggy bank", async () => {
       const {
         hamm,
         owner: userA,
@@ -504,16 +504,15 @@ describe("PiggyBank", () => {
       const { withdrawerAddress: withdrawerAddressBefore } =
         await hamm.getPiggyBankById(piggyBankId);
       expect(withdrawerAddressBefore).to.eql(userB.address);
-      await hamm
-        .connect(userB)
-        .changeWithdrawer(piggyBankId, userA.address)
-        .then((tx) => tx.wait());
+      await expect(
+        hamm.connect(userB).changeWithdrawer(piggyBankId, userB.address)
+      ).to.revertedWith("Only owner can call this function.");
       const { withdrawerAddress: withdrawerAddressAfter } =
         await hamm.getPiggyBankById(piggyBankId);
-      expect(withdrawerAddressAfter).to.eql(userA.address);
+      expect(withdrawerAddressAfter).to.eql(userB.address);
     });
 
-    it("Given a user different than the beneficiary or withdrawer on a piggy bank, When it wants to change the withdrawer, Then it must revert as only the beneficiary or withdrawer can change the withdrawer of a piggy bank", async () => {
+    it("Given a user different than the beneficiary on a piggy bank, When it wants to change the withdrawer, Then it must revert as only the beneficiary can change the withdrawer of a piggy bank", async () => {
       const {
         hamm,
         owner: userA,
@@ -536,7 +535,7 @@ describe("PiggyBank", () => {
       expect(withdrawerAddressBefore).to.eql(userA.address);
       await expect(
         hamm.connect(userB).changeWithdrawer(piggyBankId, userB.address)
-      ).to.revertedWith("Only withdrawer or owner can call this function.");
+      ).to.revertedWith("Only owner can call this function.");
       const { withdrawerAddress: withdrawerAddressAfter } =
         await hamm.getPiggyBankById(piggyBankId);
       expect(withdrawerAddressAfter).to.eql(userA.address);
