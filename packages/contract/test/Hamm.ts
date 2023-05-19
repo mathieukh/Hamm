@@ -35,7 +35,6 @@ describe("PiggyBank", () => {
         .connect(userA)
         .createNewPiggyBank(
           userA.address,
-          userA.address,
           "My piggy bank",
           "A new piggy bank to test the contract",
           fakeToken.address
@@ -70,7 +69,6 @@ describe("PiggyBank", () => {
         .connect(userA)
         .createNewPiggyBank(
           userB.address,
-          userB.address,
           "My piggy bank",
           "A new piggy bank to test the contract",
           fakeToken.address
@@ -90,7 +88,6 @@ describe("PiggyBank", () => {
       await hamm
         .connect(userA)
         .createNewPiggyBank(
-          userB.address,
           userB.address,
           "My piggy bank",
           "A new piggy bank to test the contract",
@@ -204,51 +201,6 @@ describe("PiggyBank", () => {
       );
     });
 
-    it("Given a piggy bank with funds, When the withdrawer want to withdraw it, Then it must withdraw the fund to the beneficiary", async () => {
-      const {
-        hamm,
-        owner: userA,
-        otherAccount: userB,
-        fakeToken,
-        changeBalanceForUser,
-      } = await deployHammContract();
-      await hamm
-        .connect(userA)
-        .createNewPiggyBank(
-          userA.address,
-          userB.address,
-          "Piggy bank 1",
-          "Piggy bank of the user",
-          fakeToken.address
-        )
-        .then((tx) => tx.wait());
-      const piggyBankId = FIRST_PIGGY_BANK;
-      await changeBalanceForUser(userA.address, BigNumber.from(100_000));
-
-      await fakeToken
-        .connect(userA)
-        .approve(hamm.address, BigNumber.from(200_000))
-        .then((tx) => tx.wait());
-
-      await hamm
-        .connect(userA)
-        .depositPiggyBank(piggyBankId, BigNumber.from(50_000))
-        .then((tx) => tx.wait());
-
-      const balanceBefore = await fakeToken.balanceOf(userA.address);
-      expect(balanceBefore).to.be.eql(BigNumber.from(50_000));
-
-      const tx = await hamm
-        .connect(userB)
-        .withdrawalPiggyBank(piggyBankId)
-        .then((tx) => tx.wait());
-
-      // User A receives the fee too as it is the feeReceiver by default
-      const balanceAfter = await fakeToken.balanceOf(userA.address);
-      expect(balanceAfter).to.be.eql(BigNumber.from(100_000));
-      expect(tx).to.emit(hamm, "PiggyBankWithdrawed");
-    });
-
     it("Given a piggy bank with funds, When the beneficiary want to withdraw it, Then it must withdraw the fund to the beneficiary", async () => {
       const {
         hamm,
@@ -261,7 +213,6 @@ describe("PiggyBank", () => {
         .connect(userA)
         .createNewPiggyBank(
           userA.address,
-          userB.address,
           "Piggy bank 1",
           "Piggy bank of the user",
           fakeToken.address
@@ -294,7 +245,7 @@ describe("PiggyBank", () => {
       expect(tx).to.emit(hamm, "PiggyBankWithdrawed");
     });
 
-    it("Given a piggy bank, When a user different than the withdrawer or the beneficiary want to withdraw, Then it must revert as only the withdrawer or beneficiary can withdraw", async () => {
+    it("Given a piggy bank, When a user different than the beneficiary want to withdraw, Then it must revert as only the beneficiary can withdraw", async () => {
       const {
         hamm,
         owner: userA,
@@ -323,7 +274,7 @@ describe("PiggyBank", () => {
 
       await expect(
         hamm.connect(userB).withdrawalPiggyBank(piggyBankId)
-      ).to.be.revertedWith("Only withdrawer or owner can call this function.");
+      ).to.be.revertedWith("Only owner can call this function.");
     });
 
     it("Given a user, When he wants to deposit on a non-existing piggy bank, Then it must revert", async () => {
@@ -452,96 +403,6 @@ describe("PiggyBank", () => {
     });
   });
 
-  describe("Change withdrawer", () => {
-    it("Given a beneficiary in a piggy bank, When the beneficiary want to change the withdrawer of the piggy, Then the withdrawer can be change", async () => {
-      const {
-        hamm,
-        owner: userA,
-        otherAccount: userB,
-        fakeToken,
-      } = await deployHammContract();
-      await hamm
-        .connect(userA)
-        .createNewPiggyBank(
-          userA.address,
-          userB.address,
-          "Piggy bank 1",
-          "Piggy bank of the user",
-          fakeToken.address
-        )
-        .then((tx) => tx.wait());
-      const piggyBankId = FIRST_PIGGY_BANK;
-      const { withdrawerAddress: withdrawerAddressBefore } =
-        await hamm.getPiggyBankById(piggyBankId);
-      expect(withdrawerAddressBefore).to.eql(userB.address);
-      await hamm
-        .connect(userA)
-        .changeWithdrawer(piggyBankId, userA.address)
-        .then((tx) => tx.wait());
-      const { withdrawerAddress: withdrawerAddressAfter } =
-        await hamm.getPiggyBankById(piggyBankId);
-      expect(withdrawerAddressAfter).to.eql(userA.address);
-    });
-
-    it("Given a withdrawer in a piggy bank, When the withdrawer want to change the withdrawer of the piggy, Then it must revert as only the beneficiary can change the withdrawer of a piggy bank", async () => {
-      const {
-        hamm,
-        owner: userA,
-        otherAccount: userB,
-        fakeToken,
-      } = await deployHammContract();
-      await hamm
-        .connect(userA)
-        .createNewPiggyBank(
-          userA.address,
-          userB.address,
-          "Piggy bank 1",
-          "Piggy bank of the user",
-          fakeToken.address
-        )
-        .then((tx) => tx.wait());
-      const piggyBankId = FIRST_PIGGY_BANK;
-      const { withdrawerAddress: withdrawerAddressBefore } =
-        await hamm.getPiggyBankById(piggyBankId);
-      expect(withdrawerAddressBefore).to.eql(userB.address);
-      await expect(
-        hamm.connect(userB).changeWithdrawer(piggyBankId, userB.address)
-      ).to.revertedWith("Only owner can call this function.");
-      const { withdrawerAddress: withdrawerAddressAfter } =
-        await hamm.getPiggyBankById(piggyBankId);
-      expect(withdrawerAddressAfter).to.eql(userB.address);
-    });
-
-    it("Given a user different than the beneficiary on a piggy bank, When it wants to change the withdrawer, Then it must revert as only the beneficiary can change the withdrawer of a piggy bank", async () => {
-      const {
-        hamm,
-        owner: userA,
-        otherAccount: userB,
-        fakeToken,
-      } = await deployHammContract();
-      await hamm
-        .connect(userA)
-        .createNewPiggyBank(
-          userA.address,
-          userA.address,
-          "Piggy bank 1",
-          "Piggy bank of the user",
-          fakeToken.address
-        )
-        .then((tx) => tx.wait());
-      const piggyBankId = FIRST_PIGGY_BANK;
-      const { withdrawerAddress: withdrawerAddressBefore } =
-        await hamm.getPiggyBankById(piggyBankId);
-      expect(withdrawerAddressBefore).to.eql(userA.address);
-      await expect(
-        hamm.connect(userB).changeWithdrawer(piggyBankId, userB.address)
-      ).to.revertedWith("Only owner can call this function.");
-      const { withdrawerAddress: withdrawerAddressAfter } =
-        await hamm.getPiggyBankById(piggyBankId);
-      expect(withdrawerAddressAfter).to.eql(userA.address);
-    });
-  });
-
   describe("Fee", () => {
     it("Given a Hamm contract with a fee receiver address, When a user withdraw its piggy bank, Then the fee receiver address will receive 0.5% of the amount", async () => {
       const [userA] = await hre.ethers.getSigners();
@@ -616,8 +477,8 @@ describe("PiggyBank", () => {
         .depositPiggyBank(piggyBankId, BigNumber.from(100))
         .then((tx) => tx.wait());
 
-      const balanceBefore = await fakeToken.balanceOf(userA.address);
-      expect(balanceBefore).to.be.eql(BigNumber.from(0));
+      const feeReceiverBalanceBefore = await fakeToken.balanceOf(userA.address);
+      expect(feeReceiverBalanceBefore).to.be.eql(BigNumber.from(0));
 
       await hamm
         .connect(userB)
@@ -627,8 +488,8 @@ describe("PiggyBank", () => {
       const feeReceiverBalanceAfter = await fakeToken.balanceOf(userA.address);
       expect(feeReceiverBalanceAfter).to.be.eql(BigNumber.from(0));
 
-      const withdrawerBalanceAfter = await fakeToken.balanceOf(userB.address);
-      expect(withdrawerBalanceAfter).to.be.eql(BigNumber.from(100_000));
+      const ownerBalanceAfter = await fakeToken.balanceOf(userB.address);
+      expect(ownerBalanceAfter).to.be.eql(BigNumber.from(100_000));
     });
   });
 

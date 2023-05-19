@@ -31,8 +31,8 @@ const Home = () => (
         Creates as much piggy banks as you want to help you save money for your
         plans.
         <br />
-        Each piggy bank has a name, a description, an owner, a withdrawer and a
-        ERC20 token associated to it.
+        Each piggy bank has a name, a description, an owner and a ERC20 token
+        associated to it.
         <br />
         A piggy bank is a ERC721 NFT minted when it is created and the owner
         will be the beneficiary of the piggy bank.

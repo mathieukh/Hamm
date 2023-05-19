@@ -29,7 +29,6 @@ const EthAddress = z.preprocess(
 
 const CreatePiggyBankSchema = z.object({
   beneficiaryAddress: EthAddress,
-  withdrawerAddress: EthAddress,
   name: z.string(),
   description: z.string(),
   tokenContractAddress: EthAddress,
@@ -56,26 +55,14 @@ export const CreatePiggyBankForm: FC<{
     resolver: zodResolver(CreatePiggyBankSchema),
     defaultValues: {
       beneficiaryAddress: address,
-      withdrawerAddress: address,
     },
   });
   const toast = useToast();
   const onSubmit: SubmitHandler<FormValues> = (values) => {
-    const {
-      beneficiaryAddress,
-      withdrawerAddress,
-      name,
-      description,
-      tokenContractAddress,
-    } = values;
+    const { beneficiaryAddress, name, description, tokenContractAddress } =
+      values;
     return createPiggyBank({
-      args: [
-        beneficiaryAddress,
-        withdrawerAddress,
-        name,
-        description,
-        tokenContractAddress,
-      ],
+      args: [beneficiaryAddress, name, description, tokenContractAddress],
     })
       .then(({ hash }) =>
         waitForTransaction({
@@ -155,33 +142,6 @@ export const CreatePiggyBankForm: FC<{
           </FormHelperText>
           <FormErrorMessage>
             {errors.beneficiaryAddress?.message}
-          </FormErrorMessage>
-        </FormControl>
-        <FormControl isInvalid={errors.withdrawerAddress !== undefined}>
-          <FormLabel htmlFor="withdrawerAddress">Withdrawer Address</FormLabel>
-          <Controller
-            control={control}
-            name="withdrawerAddress"
-            render={({ field }) => (
-              <MyAddressInput
-                id="withdrawerAddress"
-                size={"xs"}
-                {...field}
-                changeValue={(address) =>
-                  setValue("withdrawerAddress", address)
-                }
-              />
-            )}
-          />
-          <FormHelperText>
-            Address that can{" "}
-            <Text as={"span"} fontWeight={"bold"}>
-              trigger
-            </Text>{" "}
-            the withdraw
-          </FormHelperText>
-          <FormErrorMessage>
-            {errors.withdrawerAddress?.message}
           </FormErrorMessage>
         </FormControl>
         <FormControl isInvalid={errors.tokenContractAddress !== undefined}>
