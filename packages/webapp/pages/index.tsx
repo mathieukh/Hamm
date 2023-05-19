@@ -35,7 +35,8 @@ const Home = () => (
         associated to it.
         <br />
         A piggy bank is a ERC721 NFT minted when it is created and the owner
-        will be the beneficiary of the piggy bank.
+        will be the beneficiary of the piggy bank. A fee of 0.5% of your piggy
+        bank go to the dev team when withdrawing.
         <br />
         It can be transfer to another user which will become the new owner of
         the piggy bank.
