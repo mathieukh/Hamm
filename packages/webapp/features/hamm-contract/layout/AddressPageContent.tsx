@@ -12,7 +12,7 @@ import {
 import { CreatePiggyBankButton } from "../components/CreatePiggyBankButton";
 import { PiggyBanksGridForChain } from "../components/PiggyBanksGridForChain";
 import { supportedChains } from "@/config";
-import {HiOutlineClipboard} from "react-icons/hi"
+import { HiOutlineClipboard, HiPlusCircle } from "react-icons/hi";
 import { useCopyAddress } from "@/hooks";
 
 const AddressFromPage: FC<{ address: Address }> = ({ address }) => {
@@ -40,7 +40,11 @@ export const AddressPageContent: FC<{ address: Address }> = ({ address }) => {
         <AddressFromPage address={address} />
         <PiggyBanksCounter address={address} />
         {chain && !chain.unsupported && (
-          <CreatePiggyBankButton size={"sm"} variant={"outline"}>
+          <CreatePiggyBankButton
+            size={"sm"}
+            variant={"outline"}
+            leftIcon={<HiPlusCircle width={20} height={20} />}
+          >
             Create a piggy bank
           </CreatePiggyBankButton>
         )}
