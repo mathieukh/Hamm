@@ -1,8 +1,58 @@
+import { ConnectWalletButton } from "@/components/ConnectWalletButton";
+import { SwitchNetworkButton } from "@/components/SwitchNetworkButton";
+import { supportedChains } from "@/config";
 import { CreatePiggyBankButton } from "@/features/hamm-contract/components/CreatePiggyBankButton";
 import PageLayout from "@/layout/PageLayout";
 import { Stack, Heading, Box, Text } from "@chakra-ui/react";
 import Head from "next/head";
 import { TbPig } from "react-icons/tb";
+import { useNetwork } from "wagmi";
+
+const HeroActionButton = () => {
+  const { chain } = useNetwork();
+  if (chain === undefined)
+    return (
+      <ConnectWalletButton
+        colorScheme={"pink"}
+        bg={"pink.400"}
+        rounded={"full"}
+        px={6}
+        _hover={{
+          bg: "pink.500",
+        }}
+      >
+        Start Here
+      </ConnectWalletButton>
+    );
+  if (chain.unsupported)
+    return (
+      <SwitchNetworkButton
+        colorScheme={"pink"}
+        bg={"pink.400"}
+        rounded={"full"}
+        px={6}
+        _hover={{
+          bg: "pink.500",
+        }}
+        chainId={supportedChains[0].id}
+      >
+        Wrong Network. Switch to a supported one
+      </SwitchNetworkButton>
+    );
+  return (
+    <CreatePiggyBankButton
+      colorScheme={"pink"}
+      bg={"pink.400"}
+      rounded={"full"}
+      px={6}
+      _hover={{
+        bg: "pink.500",
+      }}
+    >
+      Create a piggy bank
+    </CreatePiggyBankButton>
+  );
+};
 
 const Home = () => (
   <PageLayout>
@@ -50,17 +100,7 @@ const Home = () => (
         alignSelf={"center"}
         position={"relative"}
       >
-        <CreatePiggyBankButton
-          colorScheme={"pink"}
-          bg={"pink.400"}
-          rounded={"full"}
-          px={6}
-          _hover={{
-            bg: "pink.500",
-          }}
-        >
-          Create a piggy bank
-        </CreatePiggyBankButton>
+        <HeroActionButton />
       </Stack>
     </Stack>
   </PageLayout>

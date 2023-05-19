@@ -26,13 +26,14 @@ import { FC } from "react";
 import { Chain, Address } from "viem";
 import { useContractAddress } from "../hooks";
 import { BigNumberish, ethers } from "ethers";
-import { useAccount, useNetwork, useSwitchNetwork, useToken } from "wagmi";
+import { useAccount, useNetwork, useToken } from "wagmi";
 import { truncateAddress } from "@/utils";
 import Link from "next/link";
 import { DepositPiggyBankForm } from "./DepositPiggyBankForm";
 import { WithdrawalPiggyBankForm } from "./WithdrawalPiggyBankForm";
 import { HiOutlineTrash } from "react-icons/hi";
 import { HiOutlineBanknotes, HiOutlineArrowDownCircle } from "react-icons/hi2";
+import { SwitchNetworkButton } from "@/components/SwitchNetworkButton";
 
 const Balance: FC<{
   balance: BigNumberish;
@@ -139,18 +140,15 @@ const PiggyActions: FC<{
 }> = ({ chain, piggyBankId, beneficiaryAddress }) => {
   const { address: connectedAddress } = useAccount();
   const { chain: connectedChain } = useNetwork();
-  const { switchNetwork } = useSwitchNetwork({ chainId: chain.id });
   if (connectedAddress === undefined) return null;
   if (chain.id !== connectedChain?.id)
     return (
-      <Button
+      <SwitchNetworkButton
         size={"sm"}
         variant={"outline"}
         colorScheme={"orange"}
-        onClick={() => switchNetwork?.()}
-      >
-        Switch network
-      </Button>
+        chainId={chain.id}
+      />
     );
   return (
     <>
