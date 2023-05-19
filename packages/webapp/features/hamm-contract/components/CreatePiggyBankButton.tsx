@@ -1,5 +1,4 @@
 import { FC } from "react";
-import {HiPlusCircle} from "react-icons/hi"
 import {
   Button,
   ButtonProps,
@@ -17,11 +16,7 @@ export const CreatePiggyBankButton: FC<ButtonProps> = (props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <>
-      <Button
-        {...props}
-        onClick={onOpen}
-        leftIcon={<HiPlusCircle width={20} height={20} />}
-      >
+      <Button {...props} onClick={onOpen}>
         {props.children ?? "Create"}
       </Button>
       <Modal isOpen={isOpen} onClose={onClose} isCentered={true}>
