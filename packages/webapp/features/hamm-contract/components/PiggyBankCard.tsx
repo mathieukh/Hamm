@@ -31,8 +31,8 @@ import { truncateAddress } from "@/utils";
 import Link from "next/link";
 import { DepositPiggyBankForm } from "./DepositPiggyBankForm";
 import { WithdrawalPiggyBankForm } from "./WithdrawalPiggyBankForm";
-import {HiOutlineTrash} from "react-icons/hi"
-import {HiOutlineBanknotes, HiOutlineArrowDownCircle} from "react-icons/hi2"
+import { HiOutlineTrash } from "react-icons/hi";
+import { HiOutlineBanknotes, HiOutlineArrowDownCircle } from "react-icons/hi2";
 
 const Balance: FC<{
   balance: BigNumberish;
@@ -135,9 +135,8 @@ const DeletePiggyBankButton: FC<
 const PiggyActions: FC<{
   chain: Chain;
   piggyBankId: bigint;
-  withdrawerAddress: string;
   beneficiaryAddress: string;
-}> = ({ chain, piggyBankId, withdrawerAddress, beneficiaryAddress }) => {
+}> = ({ chain, piggyBankId, beneficiaryAddress }) => {
   const { address: connectedAddress } = useAccount();
   const { chain: connectedChain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({ chainId: chain.id });
@@ -160,16 +159,13 @@ const PiggyActions: FC<{
         chain={chain}
         piggyBankId={piggyBankId}
       />
-      {(connectedAddress === withdrawerAddress ||
-        connectedAddress === beneficiaryAddress) && (
-        <WithdrawPiggyBankButton
-          size={"sm"}
-          chain={chain}
-          piggyBankId={piggyBankId}
-        />
-      )}
       {connectedAddress === beneficiaryAddress && (
         <>
+          <WithdrawPiggyBankButton
+            size={"sm"}
+            chain={chain}
+            piggyBankId={piggyBankId}
+          />
           <Spacer />
           <DeletePiggyBankButton
             size={"sm"}
@@ -194,14 +190,8 @@ export const PiggyBankCard: FC<{
     watch: true,
   });
   if (piggyBank === undefined) return null;
-  const [
-    name,
-    description,
-    tokenContractAddress,
-    balance,
-    beneficiaryAddress,
-    withdrawerAddress,
-  ] = piggyBank;
+  const [name, description, tokenContractAddress, balance, beneficiaryAddress] =
+    piggyBank;
 
   const TokenLink = () => {
     const { blockExplorers } = chain;
@@ -266,20 +256,11 @@ export const PiggyBankCard: FC<{
               {truncateAddress(beneficiaryAddress)}
             </Link>
           </Text>
-          <Text fontSize={"xs"}>
-            <Text as={"span"} fontWeight={"semibold"}>
-              Withdrawer address:{" "}
-            </Text>
-            <Link href={`/address/${withdrawerAddress}`}>
-              {truncateAddress(withdrawerAddress)}
-            </Link>
-          </Text>
         </CardBody>
         <CardFooter gap={2}>
           <PiggyActions
             chain={chain}
             piggyBankId={piggyBankId}
-            withdrawerAddress={withdrawerAddress}
             beneficiaryAddress={beneficiaryAddress}
           />
         </CardFooter>

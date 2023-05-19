@@ -11,7 +11,6 @@ struct PiggyBank {
     string description;
     address tokenContractAddress;
     uint balance;
-    address withdrawerAddress;
 }
 
 contract Hamm is ERC721, HammRenderer {
@@ -46,32 +45,16 @@ contract Hamm is ERC721, HammRenderer {
         _;
     }
 
-    modifier onlyWithdrawerOrOwner(uint piggyBankId) {
-        require(
-            msg.sender == ownerOf(piggyBankId) ||
-                msg.sender == piggyBanksById[piggyBankId].withdrawerAddress,
-            "Only withdrawer or owner can call this function."
-        );
-        _;
-    }
-
     function createNewPiggyBankForSender(
         string memory name,
         string memory description,
         address tokenContractAddress
     ) external {
-        createNewPiggyBank(
-            msg.sender,
-            msg.sender,
-            name,
-            description,
-            tokenContractAddress
-        );
+        createNewPiggyBank(msg.sender, name, description, tokenContractAddress);
     }
 
     function createNewPiggyBank(
         address beneficiaryAddress,
-        address withdrawerAddress,
         string memory name,
         string memory description,
         address tokenContractAddress
@@ -82,7 +65,6 @@ contract Hamm is ERC721, HammRenderer {
         piggyBank.description = description;
         piggyBank.tokenContractAddress = tokenContractAddress;
         piggyBank.balance = 0;
-        piggyBank.withdrawerAddress = withdrawerAddress;
         _safeMint(beneficiaryAddress, piggyBankId);
         emit PiggyBankCreated(piggyBankId);
     }
@@ -120,8 +102,7 @@ contract Hamm is ERC721, HammRenderer {
             string memory description,
             address tokenContractAddress,
             uint balance,
-            address beneficiaryAddress,
-            address withdrawerAddress
+            address beneficiaryAddress
         )
     {
         name = piggyBanksById[piggyBankId].name;
@@ -129,7 +110,6 @@ contract Hamm is ERC721, HammRenderer {
         tokenContractAddress = piggyBanksById[piggyBankId].tokenContractAddress;
         balance = piggyBanksById[piggyBankId].balance;
         beneficiaryAddress = ownerOf(piggyBankId);
-        withdrawerAddress = piggyBanksById[piggyBankId].withdrawerAddress;
     }
 
     function depositPiggyBank(
@@ -149,7 +129,7 @@ contract Hamm is ERC721, HammRenderer {
 
     function withdrawalPiggyBank(
         uint piggyBankId
-    ) public onlyWithdrawerOrOwner(piggyBankId) returns (bool transfer) {
+    ) public onlyOwner(piggyBankId) returns (bool transfer) {
         uint amount = piggyBanksById[piggyBankId].balance;
         uint fee = calculateFee(amount);
         uint amountToWithdrawer = amount - fee;
@@ -168,13 +148,6 @@ contract Hamm is ERC721, HammRenderer {
     function deletePiggyBank(uint piggyBankId) public onlyOwner(piggyBankId) {
         withdrawalPiggyBank(piggyBankId);
         _burn(piggyBankId);
-    }
-
-    function changeWithdrawer(
-        uint piggyBankId,
-        address withdrawerAddress
-    ) public onlyOwner(piggyBankId) {
-        piggyBanksById[piggyBankId].withdrawerAddress = withdrawerAddress;
     }
 
     /**
