@@ -1,6 +1,9 @@
 import { FC, PropsWithChildren } from "react";
-import {HiChevronDown, HiOutlineClipboard } from "react-icons/hi"
-import { HiOutlineWallet, HiOutlineArrowLeftOnRectangle } from "react-icons/hi2"
+import { HiChevronDown, HiOutlineClipboard } from "react-icons/hi";
+import {
+  HiOutlineWallet,
+  HiOutlineArrowLeftOnRectangle,
+} from "react-icons/hi2";
 import { useCopyAddress, useTruncatedAddress } from "@/hooks";
 import { useDisconnect } from "wagmi";
 import Link from "next/link";
@@ -46,7 +49,9 @@ export const AddressDropdown: FC = () => {
           </Link>
         </MenuItem>
         <MenuItem onClick={() => copyAddress()}>
-          <ItemWithIcon leftIcon={<HiOutlineClipboard width={20} height={20} />}>
+          <ItemWithIcon
+            leftIcon={<HiOutlineClipboard width={20} height={20} />}
+          >
             Copy address
           </ItemWithIcon>
         </MenuItem>
