@@ -64,7 +64,7 @@ const Home = () => (
       alignItems={"center"}
       textAlign={"center"}
       spacing={{ base: 8, md: 12 }}
-      py={{ base: 20, md: 36 }}
+      pt={12}
     >
       <TbPig size={"10em"} />
       <Heading
