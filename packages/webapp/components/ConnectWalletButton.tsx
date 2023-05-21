@@ -1,14 +1,15 @@
 import { Button, ButtonProps } from "@chakra-ui/react";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { FC } from "react";
-import { useAccount, useConnect } from "wagmi";
+import { useAccount } from "wagmi";
 
 export const ConnectWalletButton: FC<ButtonProps> = (props) => {
   const { isConnecting } = useAccount();
-  const { connect, connectors } = useConnect();
+  const { openConnectModal } = useConnectModal();
   return (
     <Button
       {...props}
-      onClick={() => connect({ connector: connectors[0] })}
+      onClick={() => openConnectModal?.()}
       isLoading={isConnecting}
     >
       {props.children ?? "Connect wallet"}
