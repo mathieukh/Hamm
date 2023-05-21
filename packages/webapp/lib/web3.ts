@@ -1,8 +1,12 @@
-import { INFURA_PROVIDER_API_KEY, supportedChains } from "@/config";
+import {
+  INFURA_PROVIDER_API_KEY,
+  WALLET_CONNECT_PROJECT_ID,
+  supportedChains,
+} from "@/config";
 import { configureChains, createConfig } from "wagmi";
 import { publicProvider } from "wagmi/providers/public";
 import { infuraProvider } from "wagmi/providers/infura";
-import { InjectedConnector } from "wagmi/connectors/injected";
+import { getDefaultWallets } from "@rainbow-me/rainbowkit";
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   supportedChains,
@@ -14,9 +18,15 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
   ]
 );
 
+const { connectors } = getDefaultWallets({
+  appName: "Hamm",
+  projectId: WALLET_CONNECT_PROJECT_ID,
+  chains,
+});
+
 export const wagmiConfig = createConfig({
   autoConnect: false,
-  connectors: [new InjectedConnector({ chains })],
+  connectors,
   publicClient,
   webSocketPublicClient,
 });
