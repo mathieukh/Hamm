@@ -1,6 +1,6 @@
 import { ConnectWalletButton } from "@/components/ConnectWalletButton";
 import { SwitchNetworkButton } from "@/components/SwitchNetworkButton";
-import { supportedChains } from "@/config";
+import { activeChain } from "@/config";
 import { CreatePiggyBankButton } from "@/features/hamm-contract/components/CreatePiggyBankButton";
 import PageLayout from "@/layout/PageLayout";
 import { Stack, Heading, Box, Text } from "@chakra-ui/react";
@@ -34,7 +34,7 @@ const HeroActionButton = () => {
         _hover={{
           bg: "pink.500",
         }}
-        chainId={supportedChains[0].id}
+        chainId={activeChain.id}
       >
         Wrong Network. Switch to a supported one
       </SwitchNetworkButton>
