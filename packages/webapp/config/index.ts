@@ -1,18 +1,14 @@
-import { fantom, fantomTestnet, hardhat, bsc } from "@wagmi/chains";
-import { Chain } from "wagmi";
-
-const INFURA_PROVIDER_API_KEY = process.env.INFURA_PROVIDER_API_KEY;
-const NODE_ENV = process.env.NODE_ENV;
-const WALLET_CONNECT_PROJECT_ID = process.env.WALLET_CONNECT_PROJECT_ID;
-
-const activeChain: Chain = NODE_ENV === "production" ? fantom : hardhat;
-
-const supportedChains: Chain[] =
-  NODE_ENV === "production" ? [fantom, bsc] : [hardhat, fantomTestnet];
+import {
+  INFURA_PROVIDER_API_KEY,
+  WALLET_CONNECT_PROJECT_ID,
+  CONTRACT_ADDRESSES,
+} from "./env";
+import { activeChain, supportedChains } from "./web3";
 
 export {
   INFURA_PROVIDER_API_KEY,
   WALLET_CONNECT_PROJECT_ID,
+  CONTRACT_ADDRESSES,
   activeChain,
   supportedChains,
 };
