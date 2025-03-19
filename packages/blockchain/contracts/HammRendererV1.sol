@@ -1,9 +1,13 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
-import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+import {IHammRenderer} from "./interfaces/IHammRenderer.sol";
+import {IHamm} from "./interfaces/IHamm.sol";
 
-abstract contract HammRenderer {
-    function renderSvg() public pure returns (string memory) {
+contract HammRendererV1 is IHammRenderer {
+    function renderSvg(
+        IHamm.PiggyBank calldata /* piggyBank */
+    ) external pure override returns (string memory svg) {
         return
             string.concat(
                 '<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000" style="background:#fff">',

@@ -1,5 +1,5 @@
-import { HardhatUserConfig, task } from "hardhat/config";
-import "@nomicfoundation/hardhat-toolbox";
+import "@nomicfoundation/hardhat-toolbox-viem";
+import { type HardhatUserConfig, task } from "hardhat/config";
 import { changeBalanceForUser } from "./test/utils";
 
 // Enables JSON serialization of BigInt type

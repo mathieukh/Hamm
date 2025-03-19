@@ -1,39 +1,39 @@
 {
-  "name": "@khalypso/hamm-webapp",
-  "version": "1.0.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "generate:wagmi": "wagmi generate"
-  },
-  "dependencies": {
-    "@chakra-ui/react": "^2.8.1",
-    "@emotion/react": "^11.11.1",
-    "@emotion/styled": "^11.11.0",
-    "@hookform/resolvers": "^3.3.1",
-    "@rainbow-me/rainbowkit": "1.0.11",
-    "connectkit": "^1.5.3",
-    "ethers": "6.7.1",
-    "framer-motion": "^10.16.4",
-    "next": "13.4.19",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "react-hook-form": "^7.46.1",
-    "react-icons": "^4.11.0",
-    "viem": "^1.10.9",
-    "wagmi": "^1.4.1",
-    "zod": "^3.22.2"
-  },
-  "devDependencies": {
-    "@types/node": "18.17.15",
-    "@types/react": "18.2.21",
-    "@types/react-dom": "18.2.7",
-    "@wagmi/cli": "^1.5.0",
-    "eslint": "8.49.0",
-    "eslint-config-next": "13.4.19",
-    "typescript": "5.2.2"
-  }
+	"name": "@khalypso/hamm-webapp",
+	"version": "1.0.0",
+	"private": true,
+	"scripts": {
+		"dev": "next dev",
+		"build": "next build",
+		"start": "next start",
+		"lint": "next lint",
+		"generate:wagmi": "wagmi generate"
+	},
+	"dependencies": {
+		"@chakra-ui/react": "^2.8.1",
+		"@emotion/react": "^11.11.1",
+		"@emotion/styled": "^11.11.0",
+		"@hookform/resolvers": "^3.3.1",
+		"@rainbow-me/rainbowkit": "1.0.11",
+		"connectkit": "^1.5.3",
+		"ethers": "6.7.1",
+		"framer-motion": "^10.16.4",
+		"next": "13.4.19",
+		"react": "18.2.0",
+		"react-dom": "18.2.0",
+		"react-hook-form": "^7.46.1",
+		"react-icons": "^4.11.0",
+		"viem": "^1.10.9",
+		"wagmi": "^1.4.1",
+		"zod": "^3.22.2"
+	},
+	"devDependencies": {
+		"@types/node": "18.17.15",
+		"@types/react": "18.2.21",
+		"@types/react-dom": "18.2.7",
+		"@wagmi/cli": "^1.5.0",
+		"eslint": "8.49.0",
+		"eslint-config-next": "13.4.19",
+		"typescript": "5.2.2"
+	}
 }

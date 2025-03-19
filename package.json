@@ -1,13 +1,14 @@
 {
-  "name": "@khalypso/hamm",
-  "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
-  "scripts": {
-    "dev:webapp": "yarn workspace @khalypso/hamm-webapp run dev",
-    "dev:contract": "yarn workspace @khalypso/hamm-contract run dev",
-    "deploy:contract:localhost": "yarn workspace @khalypso/hamm-contract run deploy:localhost",
-    "build": "yarn workspace @khalypso/hamm-webapp run build"
-  }
+	"name": "@khalypso/hamm",
+	"private": true,
+	"workspaces": ["packages/*"],
+	"scripts": {
+		"dev:webapp": "yarn workspace @khalypso/hamm-webapp run dev",
+		"dev:contract": "yarn workspace @khalypso/hamm-contract run dev",
+		"deploy:contract:localhost": "yarn workspace @khalypso/hamm-contract run deploy:localhost",
+		"build": "yarn workspace @khalypso/hamm-webapp run build"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.9.4"
+	}
 }
